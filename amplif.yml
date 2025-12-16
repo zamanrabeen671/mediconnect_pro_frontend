@@ -1,0 +1,27 @@
+version: 1
+build:
+  env:
+    variables:
+      NODE_VERSION: '18'
+      NPM_CONFIG_PACKAGE_MANAGER: 'pnpm'
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - rm -rf node_modules package-lock.json
+        - npm install
+        - |
+          if [ ! -d "node_modules/@rollup/rollup-linux-x64-gnu" ]; then
+            echo "Installing missing rollup native binary..."
+            npm install @rollup/rollup-linux-x64-gnu --no-save --optional
+          fi
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
