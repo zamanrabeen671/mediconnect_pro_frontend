@@ -1,63 +1,56 @@
-import { Routes, Route } from "react-router";
-import Home from "./pages/Home";
-import Layout from "./components/Layout";
-import Login from "./pages/Login";
-import ProtectedRoute from "./utils/ProtectedRoute";
+import { useAppSelector } from "./store/hooks"
+import SignIn from "./pages/auth/sign-in"
+import SignUp from "./pages/auth/sign-up"
+import DoctorDashboard from "./pages/doctor/dashboard"
+import DoctorProfileCompletion from "./pages/doctor/profile-completion"
+import PatientDashboard from "./pages/patient/dashboard"
+import AdminDashboard from "./pages/admin/dashboard"
+import LandingPage from "./pages/landing"
+import MainLayout from "./components/Layout/main-sidebar"
+import { Navigate, Route, Routes } from "react-router"
 
-import { useEffect } from "react";
-import { useAppSelector } from "./store/hooks";
-
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 function App() {
-  const { isDarkMode } = useAppSelector((state) => state.darkMode);
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth)
 
-  useEffect(() => {
-    if (isDarkMode) {
-      document.body.classList.add("dark-mode");
-    } else {
-      document.body.classList.remove("dark-mode");
-    }
-  }, [isDarkMode]);
   return (
-    <div>
+    <MainLayout>
       <Routes>
-        <Route element={<Layout />}>
-          <Route
-            index
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/products"
-            element={
-              <ProtectedRoute>
-                <></>
-              </ProtectedRoute>
-            }
-          />
-          
-        </Route>
-        <Route path="/login" element={<Login />} />
-      </Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/sign-in" element={!isAuthenticated ? <SignIn /> : <Navigate to={`/${user?.role}`} />} />
+        <Route path="/sign-up" element={!isAuthenticated ? <SignUp /> : <Navigate to={`/${user?.role}`} />} />
 
-      <ToastContainer
-        position="top-center" // 👈 This makes toasts appear at the top
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-      />
-    </div>
-  );
+        {/* Protected Routes */}
+        <Route
+          path="/doctor/*"
+          element={
+            isAuthenticated && user?.role === "doctor" ? (
+              user.profileCompleted ? (
+                <DoctorDashboard />
+              ) : (
+                <Navigate to="/doctor/complete-profile" />
+              )
+            ) : (
+              <Navigate to="/sign-in" />
+            )
+          }
+        />
+        <Route
+          path="/doctor/complete-profile"
+          element={
+            isAuthenticated && user?.role === "doctor" ? <DoctorProfileCompletion /> : <Navigate to="/sign-in" />
+          }
+        />
+        <Route
+          path="/patient"
+          element={isAuthenticated && user?.role === "patient" ? <PatientDashboard /> : <Navigate to="/sign-in" />}
+        />
+        <Route
+          path="/admin"
+          element={isAuthenticated && user?.role === "admin" ? <AdminDashboard /> : <Navigate to="/sign-in" />}
+        />
+      </Routes>
+    </MainLayout>
+  )
 }
 
-export default App;
+export default App
