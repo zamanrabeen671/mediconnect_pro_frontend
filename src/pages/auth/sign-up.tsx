@@ -4,13 +4,12 @@ import type React from "react"
 
 import { useState } from "react"
 import { useAppDispatch } from "../../store/hooks"
-import { setUser } from "../../store/slices/auth-slice"
 import { FaEnvelope, FaLock, FaUser, FaUserMd } from "react-icons/fa"
 import { Link, useNavigate } from "react-router"
+import { userCreate } from "../../store/API/userApis"
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -24,8 +23,7 @@ export default function SignUp() {
     e.preventDefault()
     setError("")
 
-    // Validation
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+    if (!formData.email || !formData.password || !formData.confirmPassword) {
       setError("Please fill in all fields")
       return
     }
@@ -40,35 +38,25 @@ export default function SignUp() {
       return
     }
 
-    // Mock registration - In production, this would be an API call
     const newUser = {
-      id: Math.random().toString(),
       email: formData.email,
-      name: formData.name,
+      password: formData.password,
       role: formData.role,
-      profileCompleted: formData.role === "patient", // Patients don't need profile completion
     }
-
-    dispatch(setUser(newUser))
-
-    // Navigate based on role
-    if (formData.role === "doctor") {
-      navigate("/doctor/complete-profile")
-    } else {
-      navigate("/patient")
-    }
+    dispatch(userCreate({
+        postData: newUser,
+        router: navigate,
+      }))
   }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-semibold text-foreground">Create Account</h1>
           <p className="text-muted-foreground mt-2">Join our healthcare platform</p>
         </div>
 
-        {/* Sign Up Form */}
         <div className="bg-card border border-border rounded-xl p-8 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
@@ -77,51 +65,42 @@ export default function SignUp() {
               </div>
             )}
 
-            {/* Role Selection */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-3">I am a</label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Select role">
                 <button
                   type="button"
+                  role="radio"
+                  aria-checked={formData.role === "patient"}
                   onClick={() => setFormData({ ...formData, role: "patient" })}
-                  className={`p-4 border rounded-lg flex flex-col items-center gap-2 transition-colors ${
+                  className={`p-4 border rounded-lg flex flex-col items-center gap-2 transition-all focus:outline-none focus:ring-2 focus:ring-accent/40 ${
                     formData.role === "patient"
-                      ? "border-accent bg-accent/5 text-accent"
-                      : "border-border hover:border-accent/50"
+                      ? "border-accent bg-accent/10 text-accent ring-2 ring-accent/20 scale-105"
+                      : "border-border hover:border-accent/50 bg-card"
                   }`}
                 >
-                  <FaUser className="w-6 h-6" />
+                  <div className="relative">
+                    <FaUser className="w-6 h-6" />
+                  </div>
                   <span className="font-medium">Patient</span>
                 </button>
+
                 <button
                   type="button"
+                  role="radio"
+                  aria-checked={formData.role === "doctor"}
                   onClick={() => setFormData({ ...formData, role: "doctor" })}
-                  className={`p-4 border rounded-lg flex flex-col items-center gap-2 transition-colors ${
+                  className={`p-4 border rounded-lg flex flex-col items-center gap-2 transition-all focus:outline-none focus:ring-2 focus:ring-accent/40 ${
                     formData.role === "doctor"
-                      ? "border-accent bg-accent/5 text-accent"
-                      : "border-border hover:border-accent/50"
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-600 ring-2 ring-emerald-200 scale-105"
+                      : "border-border hover:border-accent/50 bg-card"
                   }`}
                 >
-                  <FaUserMd className="w-6 h-6" />
+                  <div className="relative">
+                    <FaUserMd className="w-6 h-6" />
+                  </div>
                   <span className="font-medium">Doctor</span>
                 </button>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-                Full Name
-              </label>
-              <div className="relative">
-                <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <input
-                  id="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  placeholder="John Doe"
-                />
               </div>
             </div>
 

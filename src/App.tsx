@@ -24,7 +24,7 @@ function App() {
           path="/doctor/*"
           element={
             isAuthenticated && user?.role === "doctor" ? (
-              user.profileCompleted ? (
+              user.status === 'active' ? (
                 <DoctorDashboard />
               ) : (
                 <Navigate to="/doctor/complete-profile" />

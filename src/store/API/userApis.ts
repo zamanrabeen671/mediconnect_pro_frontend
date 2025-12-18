@@ -3,27 +3,23 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import useAxios from "../../utils/useAxios";
 import { API_URL } from "../../settings/config";
 import auth from "../../utils/auth";
+import axios from "axios";
+import { setUser } from "../slices/auth-slice";
 
 export const login = createAsyncThunk(
   "login",
-  async (
-    data: {
-      email: string;
-      password: string;
-    },
-    thunkAPI
-  ) => {
+  async (data: any, thunkAPI) => {
+    const {postData, router} = data;
+    const { email, password } = postData;
     try {
-      const api = useAxios();
-      const response = await api.post(`${API_URL}/auth/login`, data);
-      const jwt = `Bearer ${response.data.data.token}`;
-
-      auth.setToken(jwt);
-      thunkAPI.dispatch(getUser());
-      return response.data; // Return the data from the response
+      const api = axios.create({ baseURL: API_URL }); // no token needed
+      const response = await api.post("/auth/login", { email, password });
+      auth.setToken(response.data.token);
+      thunkAPI.dispatch(setUser(response.data.user));
+      router(`/${response.data.user.role}`);
+      return response.data;
     } catch (error: any) {
       console.log(error);
-
       return thunkAPI.rejectWithValue(error?.message || "An error occurred.");
     }
   }
@@ -34,7 +30,7 @@ export const getUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     const api = useAxios();
     try {
-      const { data } = await api.get(`${API_URL}/auth/authenticated-user`);
+      const { data } = await api.get(`${API_URL}/auth/me`);
       return data.data;
     } catch (err: any) {
       return rejectWithValue(err.message);
@@ -62,9 +58,10 @@ export const userCreate = createAsyncThunk(
   async (data: any, thunkAPI) => {
     const { router, postData } = data;
     try {
-      const api = useAxios();
-      const response = await api.post(`${API_URL}/auth/register`, postData);
-      router(`/user/list`);
+
+
+      const response = await axios.post(`${API_URL}/auth/register`, postData);
+      router(`/sign-in`);
       return response?.data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.message);

@@ -4,9 +4,9 @@ import type React from "react"
 
 import { useState } from "react"
 import { useAppDispatch } from "../../store/hooks"
-import { setUser } from "../../store/slices/auth-slice"
 import { FaEnvelope, FaLock } from "react-icons/fa"
 import { Link, useNavigate } from "react-router"
+import { login } from "../../store/API/userApis"
 
 export default function SignIn() {
   const [email, setEmail] = useState("")
@@ -15,39 +15,25 @@ export default function SignIn() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
 
-    // Mock authentication - In production, this would be an API call
     if (!email || !password) {
       setError("Please fill in all fields")
       return
     }
 
-    // Demo users for testing
-    const demoUsers = {
-      "admin@mediconnect.com": { role: "admin", name: "Admin User", profileCompleted: true },
-      "doctor@mediconnect.com": { role: "doctor", name: "Dr. Smith", profileCompleted: false },
-      "patient@mediconnect.com": { role: "patient", name: "John Doe", profileCompleted: true },
+    try {
+      const data = await dispatch(
+        login({ postData: { email, password }, router: navigate }),
+      )
+      console.log(data)
+      // navigate(`/doctor`)
+    } catch (error) {
+      setError("Invalid email or password")
     }
 
-    const userEmail = email as keyof typeof demoUsers
-    if (demoUsers[userEmail]) {
-      const userData = demoUsers[userEmail]
-      dispatch(
-        setUser({
-          id: Math.random().toString(),
-          email,
-          name: userData.name,
-          role: userData.role as "admin" | "doctor" | "patient",
-          profileCompleted: userData.profileCompleted,
-        }),
-      )
-      navigate(`/${userData.role}`)
-    } else {
-      setError("Invalid credentials. Try: admin@mediconnect.com, doctor@mediconnect.com, or patient@mediconnect.com")
-    }
   }
 
   return (

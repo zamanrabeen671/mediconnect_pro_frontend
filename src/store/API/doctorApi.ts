@@ -17,14 +17,14 @@ export const getBrandList = createAsyncThunk(
       }
     }
   );
-  export const brandCreate = createAsyncThunk(
-    "user/brandCreate",
+  export const doctorCreate = createAsyncThunk(
+    "user/doctorCreate",
     async (data: any, thunkAPI) => {
       const { router, postData } = data;
       try {
         const api = useAxios();
-        const response = await api.post(`${API_URL}/brand/add`, postData);
-        router(`/products/brands`);
+        const response = await api.post(`${API_URL}/doctors`, postData);
+        router(`/doctor`);
         return response?.data;
       } catch (err: any) {
         return thunkAPI.rejectWithValue(err.message);

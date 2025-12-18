@@ -5,7 +5,7 @@ export interface User {
   email: string
   name: string
   role: "admin" | "doctor" | "patient"
-  profileCompleted?: boolean
+  status?: string
 }
 
 interface AuthState {
@@ -35,9 +35,9 @@ const authSlice = createSlice({
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload
     },
-    updateProfileCompletion: (state, action: PayloadAction<boolean>) => {
+    updateProfileCompletion: (state, action: PayloadAction<string>) => {
       if (state.user) {
-        state.user.profileCompleted = action.payload
+        state.user.status = action.payload
       }
     },
   },

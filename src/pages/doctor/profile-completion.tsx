@@ -1,17 +1,16 @@
-"use client"
-
-import type React from "react"
-
 import { useState } from "react"
 import { useAppDispatch } from "../../store/hooks"
 import { updateProfileCompletion } from "../../store/slices/auth-slice"
-import { setDoctorProfile } from "../../store/slices/doctor-slice"
-import { FaStethoscope, FaGraduationCap, FaHospital, FaIdCard, FaClock, FaDollarSign } from "react-icons/fa"
+import { FaStethoscope, FaGraduationCap, FaHospital, FaIdCard, FaClock, FaDollarSign, FaPhone, FaBuilding } from "react-icons/fa"
 import { useNavigate } from "react-router"
+import { doctorCreate } from "../../store/API/doctorApi"
 
 export default function DoctorProfileCompletion() {
   const [formData, setFormData] = useState({
+    full_name: "",
     specialization: "",
+    phone: "",
+    chamber: "",
     institute: "",
     bmdcNumber: "",
     experience: "",
@@ -26,18 +25,16 @@ export default function DoctorProfileCompletion() {
     e.preventDefault()
     setError("")
 
-    // Validation
-    if (!formData.specialization || !formData.institute || !formData.bmdcNumber || !formData.experience) {
+    if (!formData.full_name || !formData.specialization || !formData.institute || !formData.bmdcNumber || !formData.experience) {
       setError("Please fill in all required fields")
       return
     }
 
     // Save profile
-    dispatch(setDoctorProfile(formData))
-    dispatch(updateProfileCompletion(true))
+    dispatch(doctorCreate({postData: formData, router: navigate}))
+    dispatch(updateProfileCompletion("pending"))
 
     // Navigate to doctor dashboard
-    navigate("/doctor")
   }
 
   return (
@@ -51,7 +48,6 @@ export default function DoctorProfileCompletion() {
           </p>
         </div>
 
-        {/* Form */}
         <div className="bg-card border border-border rounded-xl p-8 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
@@ -61,6 +57,25 @@ export default function DoctorProfileCompletion() {
             )}
 
             <div className="grid md:grid-cols-2 gap-6">
+              {/* Full Name */}
+              <div>
+                <label htmlFor="full_name" className="block text-sm font-medium text-foreground mb-2">
+                  Full Name <span className="text-destructive">*</span>
+                </label>
+                <div className="relative">
+                  <FaIdCard className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <input
+                    id="full_name"
+                    type="text"
+                    value={formData.full_name}
+                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="e.g., Dr. John Doe"
+                  />
+                </div>
+              </div>
+
+              {/* Specialization */}
               <div>
                 <label htmlFor="specialization" className="block text-sm font-medium text-foreground mb-2">
                   Specialization <span className="text-destructive">*</span>
@@ -74,6 +89,42 @@ export default function DoctorProfileCompletion() {
                     onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
                     className="w-full pl-10 pr-4 py-3 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     placeholder="e.g., Cardiology"
+                  />
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
+                  Phone
+                </label>
+                <div className="relative">
+                  <FaPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <input
+                    id="phone"
+                    type="text"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="e.g., +880 1234 567890"
+                  />
+                </div>
+              </div>
+
+              {/* Chamber */}
+              <div>
+                <label htmlFor="chamber" className="block text-sm font-medium text-foreground mb-2">
+                  Chamber
+                </label>
+                <div className="relative">
+                  <FaBuilding className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <input
+                    id="chamber"
+                    type="text"
+                    value={formData.chamber}
+                    onChange={(e) => setFormData({ ...formData, chamber: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    placeholder="e.g., Room 101, ABC Clinic"
                   />
                 </div>
               </div>
@@ -112,6 +163,7 @@ export default function DoctorProfileCompletion() {
                 </div>
               </div>
 
+              {/* Experience */}
               <div>
                 <label htmlFor="experience" className="block text-sm font-medium text-foreground mb-2">
                   Years of Experience <span className="text-destructive">*</span>
@@ -129,6 +181,7 @@ export default function DoctorProfileCompletion() {
                 </div>
               </div>
 
+              {/* Consultation Fee */}
               <div>
                 <label htmlFor="consultationFee" className="block text-sm font-medium text-foreground mb-2">
                   Consultation Fee (Optional)
@@ -145,21 +198,22 @@ export default function DoctorProfileCompletion() {
                   />
                 </div>
               </div>
-            </div>
 
-            <div>
-              <label htmlFor="qualifications" className="block text-sm font-medium text-foreground mb-2">
-                Qualifications (Optional)
-              </label>
-              <div className="relative">
-                <FaGraduationCap className="absolute left-3 top-3 text-muted-foreground w-4 h-4" />
-                <textarea
-                  id="qualifications"
-                  value={formData.qualifications}
-                  onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[100px]"
-                  placeholder="e.g., MBBS, MD (Cardiology), Fellow of American College of Cardiology"
-                />
+              {/* Qualifications */}
+              <div className="md:col-span-2">
+                <label htmlFor="qualifications" className="block text-sm font-medium text-foreground mb-2">
+                  Qualifications (Optional)
+                </label>
+                <div className="relative">
+                  <FaGraduationCap className="absolute left-3 top-3 text-muted-foreground w-4 h-4" />
+                  <textarea
+                    id="qualifications"
+                    value={formData.qualifications}
+                    onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[100px]"
+                    placeholder="e.g., MBBS, MD (Cardiology), Fellow of American College of Cardiology"
+                  />
+                </div>
               </div>
             </div>
 
