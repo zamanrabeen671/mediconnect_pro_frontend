@@ -1,14 +1,11 @@
 import { useAppSelector } from "../../store/hooks"
 import { FaCalendarAlt, FaUserInjured, FaFileAlt, FaCog } from "react-icons/fa"
-import DoctorSidebar from "../../components/Layout/doctor-sidebar"
 
 export default function DoctorDashboard() {
   const { user } = useAppSelector((state) => state.auth)
 
   return (
     <div className="flex min-h-screen bg-background">
-      <DoctorSidebar />
-
       <div className="flex-1 flex flex-col">
 
         <div className="flex-1 px-8 py-8 overflow-auto">

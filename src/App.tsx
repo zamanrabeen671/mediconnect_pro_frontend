@@ -4,10 +4,10 @@ import SignUp from "./pages/auth/sign-up"
 import DoctorDashboard from "./pages/doctor/dashboard"
 import DoctorProfileCompletion from "./pages/doctor/profile-completion"
 import PatientDashboard from "./pages/patient/dashboard"
-import AdminDashboard from "./pages/admin/dashboard"
 import LandingPage from "./pages/landing"
 import MainLayout from "./components/Layout/main-sidebar"
 import { Navigate, Route, Routes } from "react-router"
+import AdminLayout from "./components/Layout/adminLayout"
 
 function App() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth)
@@ -19,7 +19,6 @@ function App() {
         <Route path="/sign-in" element={!isAuthenticated ? <SignIn /> : <Navigate to={`/${user?.role}`} />} />
         <Route path="/sign-up" element={!isAuthenticated ? <SignUp /> : <Navigate to={`/${user?.role}`} />} />
 
-        {/* Protected Routes */}
         <Route
           path="/doctor/*"
           element={
@@ -45,8 +44,12 @@ function App() {
           element={isAuthenticated && user?.role === "patient" ? <PatientDashboard /> : <Navigate to="/sign-in" />}
         />
         <Route
-          path="/admin"
-          element={isAuthenticated && user?.role === "admin" ? <AdminDashboard /> : <Navigate to="/sign-in" />}
+          path="/admin/*"
+          element={
+            isAuthenticated && user?.role === "admin"
+              ? <AdminLayout />
+              : <Navigate to="/sign-in" />
+          }
         />
       </Routes>
     </MainLayout>

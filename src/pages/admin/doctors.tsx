@@ -1,60 +1,20 @@
 "use client"
 
 import { FaUserMd, FaCheckCircle, FaClock, FaTimesCircle, FaEye, FaCheck, FaTimes } from "react-icons/fa"
-import { useState } from "react"
-import AdminSidebar from "../../components/Layout/admin-sidebar"
-
+import { useEffect, useState } from "react"
+import { useAppDispatch, useAppSelector } from "../../store/hooks"
+import { doctorUpdate, getDoctorList } from "../../store/API/doctorApi"
 export default function AdminDoctors() {
+  const dispatch = useAppDispatch();
+  const { doctorList } = useAppSelector((state) => state.doctor);
   const [filter, setFilter] = useState<"all" | "approved" | "pending" | "rejected">("all")
 
-  const doctors = [
-    {
-      id: 1,
-      name: "Dr. Sarah Johnson",
-      email: "sarah.johnson@example.com",
-      specialization: "Cardiology",
-      institute: "City General Hospital",
-      bmdcNumber: "BMDC-12345",
-      status: "approved",
-      experience: "10 years",
-      joinedDate: "2024-01-15",
-    },
-    {
-      id: 2,
-      name: "Dr. Michael Chen",
-      email: "michael.chen@example.com",
-      specialization: "Neurology",
-      institute: "Metropolitan Medical Center",
-      bmdcNumber: "BMDC-67890",
-      status: "pending",
-      experience: "8 years",
-      joinedDate: "2024-03-20",
-    },
-    {
-      id: 3,
-      name: "Dr. Emily Rodriguez",
-      email: "emily.rodriguez@example.com",
-      specialization: "Pediatrics",
-      institute: "Children's Healthcare",
-      bmdcNumber: "BMDC-54321",
-      status: "approved",
-      experience: "12 years",
-      joinedDate: "2024-02-10",
-    },
-    {
-      id: 4,
-      name: "Dr. James Wilson",
-      email: "james.wilson@example.com",
-      specialization: "Orthopedics",
-      institute: "Sports Medicine Clinic",
-      bmdcNumber: "BMDC-98765",
-      status: "rejected",
-      experience: "5 years",
-      joinedDate: "2024-03-25",
-    },
-  ]
+  useEffect(() => {
+    // Fetch doctor list from API or store here if 
+    dispatch(getDoctorList({}))
+  }, [])
 
-  const filteredDoctors = filter === "all" ? doctors : doctors.filter((doc) => doc.status === filter)
+  const filteredDoctors = filter === "all" ? doctorList : doctorList?.filter((doc) => doc.status.toLowerCase() === filter)
 
   const statusConfig = {
     approved: { icon: FaCheckCircle, color: "text-green-500", bg: "bg-green-50", label: "Approved" },
@@ -62,9 +22,14 @@ export default function AdminDoctors() {
     rejected: { icon: FaTimesCircle, color: "text-red-500", bg: "bg-red-50", label: "Rejected" },
   }
 
+  const updateProfileCompletion = (doctorId: number, status: string) => {
+    dispatch(doctorUpdate({ postData: { id: doctorId, status }, router: () => { } }));
+
+    dispatch(getDoctorList({}))
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
-      <AdminSidebar />
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -77,7 +42,7 @@ export default function AdminDoctors() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Total Doctors</p>
-                  <p className="text-3xl font-bold text-foreground">{doctors.length}</p>
+                  <p className="text-3xl font-bold text-foreground">{doctorList?.length}</p>
                 </div>
                 <FaUserMd className="w-8 h-8 text-accent" />
               </div>
@@ -87,7 +52,7 @@ export default function AdminDoctors() {
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Approved</p>
                   <p className="text-3xl font-bold text-green-500">
-                    {doctors.filter((d) => d.status === "approved").length}
+                    {doctorList?.filter((d) => d.status === "approved").length}
                   </p>
                 </div>
                 <FaCheckCircle className="w-8 h-8 text-green-500" />
@@ -98,7 +63,7 @@ export default function AdminDoctors() {
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Pending</p>
                   <p className="text-3xl font-bold text-yellow-500">
-                    {doctors.filter((d) => d.status === "pending").length}
+                    {doctorList?.filter((d) => d.status === "pending").length}
                   </p>
                 </div>
                 <FaClock className="w-8 h-8 text-yellow-500" />
@@ -109,7 +74,7 @@ export default function AdminDoctors() {
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Rejected</p>
                   <p className="text-3xl font-bold text-red-500">
-                    {doctors.filter((d) => d.status === "rejected").length}
+                    {doctorList?.filter((d) => d.status === "rejected").length}
                   </p>
                 </div>
                 <FaTimesCircle className="w-8 h-8 text-red-500" />
@@ -117,38 +82,33 @@ export default function AdminDoctors() {
             </div>
           </div>
 
-          {/* Filters */}
           <div className="bg-card border border-border rounded-lg p-6 mb-6">
             <div className="flex gap-2">
               <button
                 onClick={() => setFilter("all")}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filter === "all" ? "bg-accent text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === "all" ? "bg-accent text-blue-400" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
               >
                 All Doctors
               </button>
               <button
                 onClick={() => setFilter("approved")}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filter === "approved" ? "bg-accent text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === "approved" ? "bg-accent text-blue-400" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
               >
                 Approved
               </button>
               <button
                 onClick={() => setFilter("pending")}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filter === "pending" ? "bg-accent text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === "pending" ? "bg-accent text-blue-400" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
               >
                 Pending
               </button>
               <button
                 onClick={() => setFilter("rejected")}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filter === "rejected" ? "bg-accent text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === "rejected" ? "bg-accent text-blue-400" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
               >
                 Rejected
               </button>
@@ -170,13 +130,13 @@ export default function AdminDoctors() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {filteredDoctors.map((doctor) => {
+                  {filteredDoctors?.map((doctor) => {
                     const status = statusConfig[doctor.status as keyof typeof statusConfig]
                     return (
                       <tr key={doctor.id} className="hover:bg-muted/50 transition-colors">
                         <td className="px-6 py-4">
                           <div>
-                            <div className="font-medium text-foreground">{doctor.name}</div>
+                            <div className="font-medium text-foreground">{doctor.full_name}</div>
                             <div className="text-sm text-muted-foreground">{doctor.email}</div>
                           </div>
                         </td>
@@ -199,10 +159,10 @@ export default function AdminDoctors() {
                             {doctor.status === "pending" && (
                               <>
                                 <button className="p-2 hover:bg-green-50 rounded-lg transition-colors text-green-600">
-                                  <FaCheck className="w-4 h-4" />
+                                  <FaCheck className="w-4 h-4" onClick={() => updateProfileCompletion(doctor.id, 'approved')} />
                                 </button>
                                 <button className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-600">
-                                  <FaTimes className="w-4 h-4" />
+                                  <FaTimes className="w-4 h-4" onClick={() => updateProfileCompletion(doctor.id, 'rejected')} />
                                 </button>
                               </>
                             )}

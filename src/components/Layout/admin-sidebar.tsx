@@ -21,7 +21,7 @@ export default function AdminSidebar() {
                 to={item.path}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                    isActive ? "bg-accent text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    isActive ? "bg-accent text-blue-600 border-2 border-blue-100" : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`
                 }
               >

@@ -1,16 +1,10 @@
 import { FaUserMd, FaUserInjured, FaCheckCircle, FaClock } from "react-icons/fa"
-import AdminSidebar from "../../components/Layout/admin-sidebar"
 
 export default function AdminDashboard() {
 
-
   return (
     <div className="flex min-h-screen bg-background">
-      <AdminSidebar />
       <div className="flex-1 flex flex-col">
-        
-        
-
         <div className="flex-1 px-8 py-8 overflow-auto">
           {/* Welcome Section */}
           <div className="mb-8">
