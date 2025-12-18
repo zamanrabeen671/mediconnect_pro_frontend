@@ -45,10 +45,6 @@ export default function DoctorProfileCompletion() {
       <div className="max-w-3xl mx-auto py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <FaStethoscope className="w-10 h-10 text-accent" />
-            <span className="text-2xl font-bold text-foreground">MediConnect Pro</span>
-          </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Complete Your Profile</h1>
           <p className="text-muted-foreground">
             Help patients know more about you by completing your professional profile

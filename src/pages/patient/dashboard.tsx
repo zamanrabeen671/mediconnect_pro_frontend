@@ -1,41 +1,12 @@
-"use client"
-
-import { useNavigate } from "react-router"
-import { useAppSelector, useAppDispatch } from "../../store/hooks"
-import { logout } from "../../store/slices/auth-slice"
-import { FaCalendarPlus, FaUserMd, FaHistory, FaPrescription, FaSignOutAlt, FaStethoscope } from "react-icons/fa"
+import { useAppSelector } from "../../store/hooks"
+import { FaCalendarPlus, FaUserMd, FaHistory, FaPrescription } from "react-icons/fa"
 
 export default function PatientDashboard() {
   const { user } = useAppSelector((state) => state.auth)
-  const dispatch = useAppDispatch()
-  const navigate = useNavigate()
 
-  const handleLogout = () => {
-    dispatch(logout())
-    navigate("/sign-in")
-  }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FaStethoscope className="w-8 h-8 text-accent" />
-            <span className="text-xl font-semibold text-foreground">MediConnect Pro</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-muted-foreground">{user?.name}</span>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <FaSignOutAlt />
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
 
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}

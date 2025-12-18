@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { useAppDispatch } from "../../store/hooks"
 import { setUser } from "../../store/slices/auth-slice"
-import { FaEnvelope, FaLock, FaUser, FaUserMd, FaStethoscope } from "react-icons/fa"
+import { FaEnvelope, FaLock, FaUser, FaUserMd } from "react-icons/fa"
 import { Link, useNavigate } from "react-router"
 
 export default function SignUp() {
@@ -64,10 +64,6 @@ export default function SignUp() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <FaStethoscope className="w-10 h-10 text-accent" />
-            <span className="text-3xl font-bold text-foreground">MediConnect Pro</span>
-          </div>
           <h1 className="text-2xl font-semibold text-foreground">Create Account</h1>
           <p className="text-muted-foreground mt-2">Join our healthcare platform</p>
         </div>

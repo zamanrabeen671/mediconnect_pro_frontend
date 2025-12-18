@@ -6,6 +6,7 @@ import { useState } from "react"
 import { useAppDispatch, useAppSelector } from "../../store/hooks"
 import { logout } from "../../store/slices/auth-slice"
 import { Link, useLocation } from "react-router"
+import { FaStethoscope } from "react-icons/fa"
 
 interface MainLayoutProps {
   children: ReactNode
@@ -36,7 +37,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <div className="flex items-center gap-8">
             <Link to="/" className="flex items-center gap-2">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <span className="text-xl font-bold text-primary-foreground">M</span>
+                <FaStethoscope className="w-8 h-8 text-accent" />
               </div>
               <span className="text-xl font-semibold text-foreground">MediConnect Pro</span>
             </Link>

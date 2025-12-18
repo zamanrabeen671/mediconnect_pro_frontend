@@ -1,31 +1,9 @@
-import { FaUserMd, FaUser, FaShieldAlt, FaCalendarCheck, FaStethoscope, FaHeartbeat } from "react-icons/fa"
+import { FaUserMd, FaUser, FaShieldAlt, FaCalendarCheck, FaHeartbeat } from "react-icons/fa"
 import { Link } from "react-router"
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FaStethoscope className="w-8 h-8 text-accent" />
-            <span className="text-2xl font-semibold text-foreground">MediConnect Pro</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link to="/sign-in" className="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors">
-              Sign In
-            </Link>
-            <Link
-              to="/sign-up"
-              className="px-6 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 text-center">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl font-bold text-foreground mb-6 text-balance leading-tight">

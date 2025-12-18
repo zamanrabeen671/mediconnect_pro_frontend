@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { useAppDispatch } from "../../store/hooks"
 import { setUser } from "../../store/slices/auth-slice"
-import { FaEnvelope, FaLock, FaStethoscope } from "react-icons/fa"
+import { FaEnvelope, FaLock } from "react-icons/fa"
 import { Link, useNavigate } from "react-router"
 
 export default function SignIn() {
@@ -55,10 +55,7 @@ export default function SignIn() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <FaStethoscope className="w-10 h-10 text-accent" />
-            <span className="text-3xl font-bold text-foreground">MediConnect Pro</span>
-          </div>
+
           <h1 className="text-2xl font-semibold text-foreground">Welcome Back</h1>
           <p className="text-muted-foreground mt-2">Sign in to your account</p>
         </div>

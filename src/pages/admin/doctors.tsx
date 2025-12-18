@@ -72,8 +72,6 @@ export default function AdminDoctors() {
             <h1 className="text-3xl font-bold text-foreground mb-2">Doctor Management</h1>
             <p className="text-muted-foreground">Manage and approve doctor registrations</p>
           </div>
-
-          {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div className="bg-card border border-border rounded-lg p-6">
               <div className="flex items-center justify-between">

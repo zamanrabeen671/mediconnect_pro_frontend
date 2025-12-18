@@ -1,4 +1,4 @@
-import { FaHome, FaCalendarAlt, FaUserInjured, FaFileAlt, FaCog, FaStethoscope } from "react-icons/fa"
+import { FaHome, FaCalendarAlt, FaUserInjured, FaFileAlt, FaCog } from "react-icons/fa"
 import { NavLink } from "react-router"
 
 export default function DoctorSidebar() {
@@ -12,18 +12,7 @@ export default function DoctorSidebar() {
 
   return (
     <aside className="w-64 bg-card border-r border-border min-h-screen flex flex-col">
-      {/* Logo */}
-      <div className="p-6 border-b border-border">
-        <div className="flex items-center gap-2">
-          <FaStethoscope className="w-8 h-8 text-accent" />
-          <div>
-            <div className="font-semibold text-foreground">MediConnect Pro</div>
-            <div className="text-xs text-muted-foreground">Doctor Portal</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation */}
+      
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
           {navItems.map((item) => (
@@ -43,11 +32,6 @@ export default function DoctorSidebar() {
           ))}
         </ul>
       </nav>
-
-      {/* Footer */}
-      <div className="p-4 border-t border-border">
-        <div className="text-xs text-muted-foreground text-center">© 2025 MediConnect Pro</div>
-      </div>
     </aside>
   )
 }

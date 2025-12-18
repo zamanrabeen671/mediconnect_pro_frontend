@@ -1,43 +1,15 @@
-"use client"
-
-import { useNavigate } from "react-router"
-import { useAppSelector, useAppDispatch } from "../../store/hooks"
-import { logout } from "../../store/slices/auth-slice"
-import { FaUserMd, FaUserInjured, FaCheckCircle, FaClock, FaSignOutAlt } from "react-icons/fa"
+import { FaUserMd, FaUserInjured, FaCheckCircle, FaClock } from "react-icons/fa"
 import AdminSidebar from "../../components/Layout/admin-sidebar"
 
 export default function AdminDashboard() {
-  const { user } = useAppSelector((state) => state.auth)
-  const dispatch = useAppDispatch()
-  const navigate = useNavigate()
 
-  const handleLogout = () => {
-    dispatch(logout())
-    navigate("/sign-in")
-  }
 
   return (
     <div className="flex min-h-screen bg-background">
       <AdminSidebar />
-
-      {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <header className="bg-card border-b border-border">
-          <div className="px-8 py-4 flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-            <div className="flex items-center gap-4">
-              <span className="text-muted-foreground">{user?.name}</span>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <FaSignOutAlt />
-                Logout
-              </button>
-            </div>
-          </div>
-        </header>
+        
+        
 
         <div className="flex-1 px-8 py-8 overflow-auto">
           {/* Welcome Section */}
