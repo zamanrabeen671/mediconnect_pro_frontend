@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
+import { getUser } from "../API/userApis"
 
 export interface User {
   id: string
@@ -40,6 +41,12 @@ const authSlice = createSlice({
         state.user.status = action.payload
       }
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(getUser.fulfilled, (state, action) => {
+      state.loading = false;
+      state.user = action.payload;
+    });
   },
 })
 

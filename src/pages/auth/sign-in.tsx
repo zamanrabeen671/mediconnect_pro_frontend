@@ -29,7 +29,6 @@ export default function SignIn() {
         login({ postData: { email, password }, router: navigate }),
       )
       console.log(data)
-      // navigate(`/doctor`)
     } catch (error) {
       setError("Invalid email or password")
     }

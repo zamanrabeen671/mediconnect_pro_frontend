@@ -89,13 +89,6 @@ export default function LandingPage() {
           </Link>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border bg-card py-8">
-        <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>&copy; 2025 MediConnect Pro. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   )
 }

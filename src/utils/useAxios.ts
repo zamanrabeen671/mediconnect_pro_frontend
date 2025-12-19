@@ -8,7 +8,6 @@ const baseURL = `${API_URL}`;
 
 const useAxios = () => {
   const token = auth.getToken();
-
   let axiosInstance;
 
   if (token) {
@@ -24,18 +23,19 @@ const useAxios = () => {
 
       (error) => {
         if (axios.isAxiosError(error) && error.response) {
+          console.log(error)
           const status = error.response?.status;
           const errorMessage =
             error.response?.data?.message || "An unexpected error occurred.";
 
           if (status === 401) {
             // Handle unauthorized error
-            auth.clearAppStorage();
-            window.location.pathname = "/login";
-            return Promise.reject({
-              message: "Unauthorized. Please log in again.",
-              status,
-            });
+            // auth.clearAppStorage();
+            // window.location.pathname = "/sign-in";
+            // return Promise.reject({
+            //   message: "Unauthorized. Please log in again.",
+            //   status,
+            // });
           }
 
           if (status === 500) {
