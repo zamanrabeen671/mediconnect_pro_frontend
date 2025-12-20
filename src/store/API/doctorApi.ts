@@ -59,7 +59,47 @@ export const doctorUpdate = createAsyncThunk(
     }
   }
 );
-
+export const doctorScheduleCreate = createAsyncThunk(
+  "user/scheduleCreate",
+  async (data: any, thunkAPI) => {
+    const { router, postData } = data;
+    try {
+      const api = useAxios();
+      const response = await api.post(`${API_URL}/schedules`, postData);
+      router(`/settings`);
+      return response?.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
+export const doctorSchedule = createAsyncThunk(
+  "user/doctorSchedule",
+  async (_, thunkAPI) => {
+    try {
+      const api = useAxios();
+      const response = await api.get(`${API_URL}/schedules/me`);
+      return response?.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
+export const createAppointmentWithPatient = createAsyncThunk(
+  "appointment/createWithPatient",
+  async (data: { postData: any; router: any }, thunkAPI) => {
+    const { postData, router } = data;
+    try {
+      const api = useAxios();
+      console.log(postData)
+      const response = await api.post(`${API_URL}/appointments/appointmentByPatient`, postData);
+      router(`/appointments`); // redirect to appointment list after creation
+      return response.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
 // export const brandDelete = createAsyncThunk(
 //   "user/brandDelete",
 //   async (id: number, thunkAPI) => {

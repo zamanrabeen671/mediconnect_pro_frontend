@@ -13,7 +13,7 @@ const useAxios = () => {
   if (token) {
     axiosInstance = axios.create({
       baseURL,
-      headers: { authorization: token },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     axiosInstance.interceptors.response.use(
@@ -76,7 +76,8 @@ const useAxios = () => {
         return req;
       } else {
         auth.clearAppStorage();
-        window.location.pathname = "/login";
+        window.location.href = "/sign-in";
+
         return req;
       }
     });
@@ -93,7 +94,7 @@ const useAxios = () => {
       (error) => {
         if (axios.isAxiosError(error) && error.response) {
           const status = error.response?.status;
-          
+
           const errorMessage =
             error.response?.data?.error ||
             error.response?.data?.message ||

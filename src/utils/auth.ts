@@ -3,7 +3,6 @@ import isEmpty from "lodash/isEmpty";
 const TOKEN_KEY = "jwtToken";
 const USER_INFO = "userInfo";
 
-const stringify = JSON.stringify;
 
 const auth = {
   /**
@@ -51,11 +50,21 @@ const auth = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(key: string): any | null {
     if (localStorage && localStorage.getItem(key)) {
-      return JSON.parse(localStorage.getItem(key)!) || null;
+      const value = localStorage.getItem(key)!;
+      try {
+        return JSON.parse(value);
+      } catch {
+        return value; // 👈 token will come here
+      }
     }
 
     if (sessionStorage && sessionStorage.getItem(key)) {
-      return JSON.parse(sessionStorage.getItem(key)!) || null;
+      const value = sessionStorage.getItem(key)!;
+      try {
+        return JSON.parse(value);
+      } catch {
+        return value;
+      }
     }
 
     return null;
@@ -75,17 +84,18 @@ const auth = {
    * @param {String}  key
    * @param {Boolean} isLocalStorage  Defines if we need to store in localStorage or sessionStorage
    */
-  set(value: string, key: string, isLocalStorage?: boolean) {
-    if (isEmpty(value)) {
-      return null;
-    }
+  set(value: any, key: string, isLocalStorage?: boolean) {
+    if (isEmpty(value)) return null;
+
+    const storedValue =
+      typeof value === "string" ? value : JSON.stringify(value);
 
     if (isLocalStorage && localStorage) {
-      return localStorage.setItem(key, stringify(value));
+      return localStorage.setItem(key, storedValue);
     }
 
     if (sessionStorage) {
-      return sessionStorage.setItem(key, stringify(value));
+      return sessionStorage.setItem(key, storedValue);
     }
 
     return null;

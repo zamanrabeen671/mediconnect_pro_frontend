@@ -2,7 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 import { getUser } from "../API/userApis"
 
 export interface User {
-  id: string
+  id: number
   email: string
   name: string
   role: "admin" | "doctor" | "patient"

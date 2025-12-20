@@ -1,7 +1,8 @@
 import { FaCalendarAlt, FaClock, FaUserInjured, FaVideo, FaCheckCircle, FaClock as FaPending } from "react-icons/fa"
-import DoctorSidebar from "../../components/Layout/doctor-sidebar"
+import { useNavigate } from "react-router"
 
 export default function DoctorAppointments() {
+  const navigate = useNavigate()
   const appointments = [
     {
       id: 1,
@@ -50,14 +51,23 @@ export default function DoctorAppointments() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <DoctorSidebar />
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Appointments</h1>
-            <p className="text-muted-foreground">Manage your patient appointments</p>
+          <div className="flex justify-between">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-foreground mb-2">Appointments</h1>
+              <p className="text-muted-foreground">Manage your patient appointments</p>
+            </div>
+            <div>
+              <button onClick={() => navigate("/doctor/appointments/create")}>
+                <span className="px-4 py-2 text-white  bg-blue-500 rounded-lg hover:bg-primary/90 transition-colors">
+                  New Appointment
+                </span>
+              </button>
+            </div>
           </div>
+
+
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

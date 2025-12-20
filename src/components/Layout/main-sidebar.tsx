@@ -16,8 +16,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
   const dispatch = useAppDispatch()
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth)
-
+  const { user } = useAppSelector((state) => state.auth)
+  const getUserInfo = localStorage.getItem('userInfo') && JSON.parse(localStorage.getItem('userInfo') || '{}');
+  console.log(getUserInfo)
+  const isAuthenticated = !!getUserInfo;
   const handleLogout = () => {
     dispatch(logout())
   }
@@ -62,7 +64,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {isAuthenticated ? (
               <div className="flex items-center gap-4">
                 <Link
-                  to={`/${user?.role}`}
+                  to={`/${getUserInfo?.role}`}
                   className="hidden text-sm font-medium text-foreground transition-colors hover:text-primary lg:block"
                 >
                   Dashboard
@@ -124,7 +126,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
               {isAuthenticated ? (
                 <>
                   <Link
-                    to={`/${user?.role}`}
+                    to={`/${getUserInfo?.role}`}
                     className="block rounded-md px-3 py-2 text-base font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
                     onClick={() => setMobileMenuOpen(false)}
                   >

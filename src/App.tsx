@@ -1,13 +1,12 @@
-import {  useAppSelector } from "./store/hooks"
 import SignIn from "./pages/auth/sign-in"
 import SignUp from "./pages/auth/sign-up"
-import DoctorDashboard from "./pages/doctor/dashboard"
 import DoctorProfileCompletion from "./pages/doctor/profile-completion"
 import PatientDashboard from "./pages/patient/dashboard"
 import LandingPage from "./pages/landing"
 import MainLayout from "./components/Layout/main-sidebar"
 import { Navigate, Route, Routes } from "react-router"
 import AdminLayout from "./components/Layout/adminLayout"
+import DoctorLayout from "./components/Layout/doctorLayout"
 // import { useEffect } from "react"
 // import { getUser } from "./store/API/userApis"
 
@@ -32,7 +31,7 @@ function App() {
           element={
             isAuthenticated && getUserInfo?.role === "doctor" ? (
               getUserInfo.status === 'approved' ? (
-                <DoctorDashboard />
+                <DoctorLayout />
               ) : (
                 <Navigate to="/doctor/complete-profile" />
               )

@@ -1,15 +1,14 @@
 "use client"
 
-import { FaUser, FaBell, FaShieldAlt, FaCalendar, FaSave } from "react-icons/fa"
+import { FaUser, FaShieldAlt, FaCalendar } from "react-icons/fa"
 import { useState } from "react"
-import DoctorSidebar from "../../components/Layout/doctor-sidebar"
+import { Schedule } from "../../components/schedule/schedule"
 
 export default function DoctorSettings() {
-  const [activeTab, setActiveTab] = useState<"profile" | "notifications" | "security" | "schedule">("profile")
+  const [activeTab, setActiveTab] = useState<"profile" | "security" | "schedule">("profile")
 
   return (
     <div className="flex min-h-screen bg-background">
-      <DoctorSidebar />
       <main className="flex-1 p-8">
         <div className="max-w-5xl mx-auto">
           {/* Header */}
@@ -25,7 +24,7 @@ export default function DoctorSettings() {
                 onClick={() => setActiveTab("profile")}
                 className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors ${
                   activeTab === "profile"
-                    ? "bg-accent text-white"
+                    ? "bg-accent text-blue-600 border-2 border-blue-100"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
@@ -33,21 +32,10 @@ export default function DoctorSettings() {
                 Profile
               </button>
               <button
-                onClick={() => setActiveTab("notifications")}
-                className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors ${
-                  activeTab === "notifications"
-                    ? "bg-accent text-white"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                <FaBell className="w-4 h-4" />
-                Notifications
-              </button>
-              <button
                 onClick={() => setActiveTab("security")}
                 className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors ${
                   activeTab === "security"
-                    ? "bg-accent text-white"
+                    ? "bg-accent text-blue-600 border-2 border-blue-100"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
@@ -58,7 +46,7 @@ export default function DoctorSettings() {
                 onClick={() => setActiveTab("schedule")}
                 className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors ${
                   activeTab === "schedule"
-                    ? "bg-accent text-white"
+                    ? "bg-accent text-blue-600 border-2 border-blue-100"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
@@ -137,26 +125,6 @@ export default function DoctorSettings() {
                 </div>
               )}
 
-              {activeTab === "notifications" && (
-                <div className="space-y-4">
-                  {[
-                    { label: "Email notifications for new appointments", checked: true },
-                    { label: "SMS reminders for upcoming appointments", checked: true },
-                    { label: "Push notifications for patient messages", checked: false },
-                    { label: "Weekly performance reports", checked: true },
-                    { label: "Prescription renewal reminders", checked: true },
-                  ].map((item, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                      <span className="text-foreground">{item.label}</span>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" defaultChecked={item.checked} className="sr-only peer" />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-accent/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              )}
-
               {activeTab === "security" && (
                 <div className="space-y-6">
                   <div>
@@ -184,58 +152,10 @@ export default function DoctorSettings() {
               )}
 
               {activeTab === "schedule" && (
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Consultation Duration</label>
-                    <select className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-foreground">
-                      <option>15 minutes</option>
-                      <option selected>30 minutes</option>
-                      <option>45 minutes</option>
-                      <option>60 minutes</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-4">Working Days</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
-                        <label
-                          key={day}
-                          className="flex items-center gap-2 p-3 bg-muted rounded-lg cursor-pointer hover:bg-muted/80"
-                        >
-                          <input type="checkbox" defaultChecked={day !== "Sunday"} className="w-4 h-4 text-accent" />
-                          <span className="text-foreground">{day}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">Start Time</label>
-                      <input
-                        type="time"
-                        defaultValue="09:00"
-                        className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-foreground"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">End Time</label>
-                      <input
-                        type="time"
-                        defaultValue="17:00"
-                        className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-foreground"
-                      />
-                    </div>
-                  </div>
-                </div>
+               <Schedule  />
               )}
 
-              {/* Save Button */}
-              <div className="mt-8 flex justify-end">
-                <button className="flex items-center gap-2 px-6 py-3 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors font-medium">
-                  <FaSave className="w-4 h-4" />
-                  Save Changes
-                </button>
-              </div>
+    
             </div>
           </div>
         </div>
