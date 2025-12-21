@@ -10,6 +10,7 @@ import DoctorLayout from "./components/Layout/doctorLayout"
 import { useAppDispatch, useAppSelector } from "./store/hooks"
 import { useEffect } from "react"
 import { getUser } from "./store/API/userApis"
+import { PendingDoctor } from "./components/common/pendingdoctor"
 // import { useEffect } from "react"
 // import { getUser } from "./store/API/userApis"
 
@@ -19,9 +20,10 @@ function App() {
   // const user = localStorage.getItem('userInfo') && JSON.parse(localStorage.getItem('userInfo') || '{}');
   // console.log(user)
   // const isAuthenticated = !!user;
+  console.log(user)
   useEffect(() => {
     dispatch(getUser());
-  }, [user]);
+  }, [dispatch]);
   return (
     <MainLayout>
       <Routes>
@@ -35,6 +37,8 @@ function App() {
             isAuthenticated && user?.role === "doctor" ? (
               user.status === 'approved' ? (
                 <DoctorLayout />
+              ) : (user.status === 'pending') ? (
+                <PendingDoctor />
               ) : (
                 <Navigate to="/doctor/complete-profile" />
               )

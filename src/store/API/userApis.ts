@@ -28,13 +28,14 @@ export const login = createAsyncThunk(
 
 export const getUser = createAsyncThunk(
   "user/getUser",
-  async (_, { rejectWithValue }) => {
+  async (_,thunkAPI ) => {
     const api = useAxios();
     try {
       const { data } = await api.get(`${API_URL}/users/me`);
+      thunkAPI.dispatch(setUser(data.user));
       return data;
     } catch (err: any) {
-      return rejectWithValue(err.message);
+      return thunkAPI.rejectWithValue(err.message);
     }
   }
 );
