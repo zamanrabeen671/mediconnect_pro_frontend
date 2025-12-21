@@ -12,7 +12,7 @@ export const login = createAsyncThunk(
     const {postData, router} = data;
     const { email, password } = postData;
     try {
-      const api = axios.create({ baseURL: API_URL }); // no token needed
+      const api = axios.create({ baseURL: API_URL });
       const response = await api.post("/auth/login", { email, password });
       auth.setToken(response.data.token);
       auth.setUserInfo(response.data.user);
@@ -32,7 +32,7 @@ export const getUser = createAsyncThunk(
     const api = useAxios();
     try {
       const { data } = await api.get(`${API_URL}/users/me`);
-      return data.data;
+      return data;
     } catch (err: any) {
       return rejectWithValue(err.message);
     }
