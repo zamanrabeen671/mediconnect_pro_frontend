@@ -32,13 +32,25 @@ export const doctorCreate = createAsyncThunk(
   }
 );
 
-export const getBrandDetails = createAsyncThunk(
-  "user/brandDetails",
-  async (id: string, { rejectWithValue }) => {
+export const getDoctorAppointmentList = createAsyncThunk(
+  "appointment/doctorAppointmentList",
+  async (id: number, { rejectWithValue }) => {
     try {
       const api = useAxios();
-      const { data }: any = await api.get(`${API_URL}/brand/${id}`);
-      return data?.data;
+      const { data }: any = await api.get(`${API_URL}/appointments/doctor/${id}`);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+export const getDoctorPatientList = createAsyncThunk(
+  "appointment/doctorPatientList",
+  async (id: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data }: any = await api.get(`${API_URL}/appointments/patients/doctor/${id}`);
+      return data;
     } catch (err: any) {
       return rejectWithValue(err.message);
     }

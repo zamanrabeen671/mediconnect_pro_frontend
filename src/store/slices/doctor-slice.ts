@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
-import { doctorSchedule, getDoctorList } from "../API/doctorApi"
+import { doctorSchedule, getDoctorAppointmentList, getDoctorList, getDoctorPatientList } from "../API/doctorApi"
 
 export interface DoctorProfile {
   specialization: string
@@ -15,6 +15,8 @@ interface DoctorState {
   appointments: any[]
   patients: any[]
   doctorList?: any[]
+  appointmentList: any[]
+  patientList: any[]
   schedule?: any[]
   loading: boolean
 }
@@ -25,6 +27,8 @@ const initialState: DoctorState = {
   patients: [],
   doctorList: [],
   schedule: [],
+  appointmentList: [],
+  patientList: [],
   loading: false,
 }
 
@@ -50,6 +54,14 @@ const doctorSlice = createSlice({
       builder.addCase(doctorSchedule.fulfilled, (state, action) => {
         state.loading = false;
         state.schedule = action.payload;
+      });
+      builder.addCase(getDoctorAppointmentList.fulfilled, (state, action) => {
+        state.loading = false;
+        state.appointmentList = action.payload;
+      });
+      builder.addCase(getDoctorPatientList.fulfilled, (state, action) => {
+        state.loading = false;
+        state.patientList = action.payload;
       });
     },
 })

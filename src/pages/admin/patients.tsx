@@ -1,185 +1,183 @@
-import { FaUserInjured, FaMale, FaFemale, FaPhone, FaEnvelope, FaCalendar, FaEye } from "react-icons/fa"
-import AdminSidebar from "../../components/Layout/admin-sidebar"
+import { FaUserInjured, FaPhone, FaMapMarkerAlt, FaTint, FaBirthdayCake, FaEye, FaMale, FaFemale } from "react-icons/fa";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
+import { getPatientList } from "../../store/API/adminApi";
+import AdminSidebar from "../../components/Layout/admin-sidebar";
 
 export default function AdminPatients() {
-  const patients = [
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john.doe@example.com",
-      phone: "+1 234 567 8900",
-      gender: "Male",
-      age: 35,
-      bloodGroup: "A+",
-      address: "123 Main St, New York, NY",
-      joinedDate: "2024-01-10",
-      appointments: 5,
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      phone: "+1 234 567 8901",
-      gender: "Female",
-      age: 28,
-      bloodGroup: "B+",
-      address: "456 Oak Ave, Los Angeles, CA",
-      joinedDate: "2024-02-15",
-      appointments: 3,
-    },
-    {
-      id: 3,
-      name: "Robert Johnson",
-      email: "robert.j@example.com",
-      phone: "+1 234 567 8902",
-      gender: "Male",
-      age: 42,
-      bloodGroup: "O+",
-      address: "789 Pine Rd, Chicago, IL",
-      joinedDate: "2024-01-20",
-      appointments: 8,
-    },
-    {
-      id: 4,
-      name: "Maria Garcia",
-      email: "maria.garcia@example.com",
-      phone: "+1 234 567 8903",
-      gender: "Female",
-      age: 31,
-      bloodGroup: "AB+",
-      address: "321 Elm St, Houston, TX",
-      joinedDate: "2024-03-05",
-      appointments: 2,
-    },
-  ]
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { patients } = useAppSelector((state) => state.admin);
+
+  useEffect(() => {
+    dispatch(getPatientList({}));
+  }, [dispatch]);
+
+  const handleViewDetails = (patientId: number) => {
+    navigate(`/admin/patient/${patientId}/details`);
+  };
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <AdminSidebar />
+    <div className="flex min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Patient Management</h1>
-            <p className="text-muted-foreground">View and manage patient records</p>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Patient Management</h1>
+            <p className="text-gray-600">View and manage all patient records</p>
           </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-card border border-border rounded-lg p-6">
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Total Patients</p>
-                  <p className="text-3xl font-bold text-foreground">{patients.length}</p>
+                  <p className="text-sm text-gray-600 mb-1">Total Patients</p>
+                  <p className="text-3xl font-bold text-gray-800">{patients?.length || 0}</p>
                 </div>
-                <FaUserInjured className="w-8 h-8 text-accent" />
+                <div className="p-3 bg-blue-100 rounded-xl">
+                  <FaUserInjured className="w-6 h-6 text-blue-600" />
+                </div>
               </div>
             </div>
-            <div className="bg-card border border-border rounded-lg p-6">
+
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Male</p>
-                  <p className="text-3xl font-bold text-blue-500">
-                    {patients.filter((p) => p.gender === "Male").length}
+                  <p className="text-sm text-gray-600 mb-1">Male Patients</p>
+                  <p className="text-3xl font-bold text-blue-600">
+                    {patients?.filter((p) => p.gender === "Male").length || 0}
                   </p>
                 </div>
-                <FaMale className="w-8 h-8 text-blue-500" />
+                <div className="p-3 bg-blue-100 rounded-xl">
+                  <FaMale className="w-6 h-6 text-blue-600" />
+                </div>
               </div>
             </div>
-            <div className="bg-card border border-border rounded-lg p-6">
+
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Female</p>
-                  <p className="text-3xl font-bold text-pink-500">
-                    {patients.filter((p) => p.gender === "Female").length}
+                  <p className="text-sm text-gray-600 mb-1">Female Patients</p>
+                  <p className="text-3xl font-bold text-pink-600">
+                    {patients?.filter((p) => p.gender === "Female").length || 0}
                   </p>
                 </div>
-                <FaFemale className="w-8 h-8 text-pink-500" />
+                <div className="p-3 bg-pink-100 rounded-xl">
+                  <FaFemale className="w-6 h-6 text-pink-600" />
+                </div>
               </div>
             </div>
-            <div className="bg-card border border-border rounded-lg p-6">
+
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Total Appointments</p>
-                  <p className="text-3xl font-bold text-foreground">
-                    {patients.reduce((sum, p) => sum + p.appointments, 0)}
+                  <p className="text-sm text-gray-600 mb-1">Avg Age</p>
+                  <p className="text-3xl font-bold text-purple-600">
+                    {patients && patients.length > 0
+                      ? Math.round(patients.reduce((sum, p) => sum + p.age, 0) / patients.length)
+                      : 0}
                   </p>
                 </div>
-                <FaCalendar className="w-8 h-8 text-accent" />
+                <div className="p-3 bg-purple-100 rounded-xl">
+                  <FaBirthdayCake className="w-6 h-6 text-purple-600" />
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Patients Table */}
-          <div className="bg-card border border-border rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-muted">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Patient</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Contact</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Gender</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Age</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Blood Group</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Appointments</th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {patients.map((patient) => (
-                    <tr key={patient.id} className="hover:bg-muted/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div>
-                          <div className="font-medium text-foreground">{patient.name}</div>
-                          <div className="text-sm text-muted-foreground">{patient.address}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-sm text-foreground">
-                            <FaEnvelope className="w-3 h-3 text-muted-foreground" />
-                            {patient.email}
+          {/* Patients List */}
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="divide-y divide-gray-100">
+              {patients && patients.length > 0 ? (
+                patients.map((patient) => (
+                  <div key={patient.id} className="p-6 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center justify-between gap-6">
+                      {/* Left Side - Patient Info */}
+                      <div className="flex-1">
+                        {/* First Row: Name, Blood Group, Gender, Age */}
+                        <div className="flex items-center gap-4 mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-100 rounded-lg">
+                              <FaUserInjured className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <h3 className="font-semibold text-lg text-gray-800">
+                              {patient.full_name}
+                            </h3>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-foreground">
-                            <FaPhone className="w-3 h-3 text-muted-foreground" />
-                            {patient.phone}
+
+                          <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                            <FaTint className="w-3 h-3" />
+                            {patient.blood_group?.group_name || "N/A"}
+                          </span>
+
+                          <span
+                            className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full ${
+                              patient.gender === "Male"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-pink-100 text-pink-700"
+                            }`}
+                          >
+                            {patient.gender === "Male" ? (
+                              <FaMale className="w-3 h-3" />
+                            ) : (
+                              <FaFemale className="w-3 h-3" />
+                            )}
+                            {patient.gender}
+                          </span>
+
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <FaBirthdayCake className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm font-medium">{patient.age} yrs</span>
                           </div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
-                            patient.gender === "Male" ? "bg-blue-50 text-blue-600" : "bg-pink-50 text-pink-600"
-                          }`}
-                        >
-                          {patient.gender === "Male" ? (
-                            <FaMale className="w-3 h-3" />
-                          ) : (
-                            <FaFemale className="w-3 h-3" />
+
+                        {/* Second Row: Phone & Address */}
+                        <div className="flex items-center gap-6 text-sm text-gray-600 ml-12">
+                          <div className="flex items-center gap-2">
+                            <FaPhone className="w-3.5 h-3.5 text-gray-400" />
+                            <span>{patient.phone}</span>
+                          </div>
+
+                          {patient.address && (
+                            <div className="flex items-center gap-2">
+                              <FaMapMarkerAlt className="w-3.5 h-3.5 text-gray-400" />
+                              <span>{patient.address}</span>
+                            </div>
                           )}
-                          {patient.gender}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-foreground">{patient.age}</td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-50 text-red-600">
-                          {patient.bloodGroup}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-foreground">{patient.appointments}</td>
-                      <td className="px-6 py-4">
-                        <button className="p-2 hover:bg-muted rounded-lg transition-colors text-accent">
-                          <FaEye className="w-4 h-4" />
+                        </div>
+                      </div>
+
+                      {/* Right Side - Action Button */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleViewDetails(patient.id)}
+                          className="group relative p-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                          title="View Details"
+                        >
+                          <FaEye className="w-5 h-5" />
+                          <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                            View Details
+                          </span>
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="px-6 py-12 text-center text-gray-500">
+                  <div className="flex flex-col items-center gap-3">
+                    <FaUserInjured className="w-12 h-12 text-gray-300" />
+                    <p className="text-lg font-medium">No patients found</p>
+                    <p className="text-sm">Patient records will appear here</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </main>
     </div>
-  )
+  );
 }

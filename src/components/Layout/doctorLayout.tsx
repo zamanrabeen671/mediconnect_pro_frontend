@@ -1,9 +1,11 @@
-import { Routes, Route, Navigate } from "react-router"
-import DoctorDashboard from "../../pages/doctor/dashboard"
-import DoctorSidebar from "./doctor-sidebar"
-import DoctorAppointments from "../../pages/doctor/appointments"
-import DoctorSettings from "../../pages/doctor/settings"
-import CreateAppointment from "../appointment/appointmentCreate"
+import { Routes, Route } from "react-router";
+import DoctorSidebar from "./doctor-sidebar";
+
+import DoctorDashboard from "../../pages/doctor/dashboard";
+import DoctorAppointments from "../../pages/doctor/appointments";
+import CreateAppointment from "../appointment/appointmentCreate";
+import DoctorSettings from "../../pages/doctor/settings";
+import DoctorPatients from "../../pages/doctor/patients";
 
 export default function DoctorLayout() {
   return (
@@ -12,15 +14,28 @@ export default function DoctorLayout() {
 
       <div className="flex-1 px-8 py-8 overflow-auto">
         <Routes>
-          <Route index element={<Navigate to="dashboard" />} />
+          {/* Default dashboard when visiting /doctor */}
+          <Route index element={<DoctorDashboard />} />
+
+          {/* Dashboard */}
           <Route path="dashboard" element={<DoctorDashboard />} />
+
+          {/* Appointments */}
           <Route path="appointments" element={<DoctorAppointments />} />
           <Route path="appointments/create" element={<CreateAppointment />} />
-          <Route path="patients" element={<div>Patients Page</div>} />
+
+          {/* Patients */}
+          <Route path="patients" element={<DoctorPatients />} />
+
+          {/* Analytics */}
           <Route path="analytics" element={<div>Analytics Page</div>} />
+
+          {/* Settings */}
           <Route path="settings" element={<DoctorSettings />} />
+
+          {/* Removed catch-all redirect to avoid blinking */}
         </Routes>
       </div>
     </div>
-  )
+  );
 }

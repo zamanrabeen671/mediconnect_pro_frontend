@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router"
 import AdminDashboard from "../../pages/admin/dashboard"
 import AdminSidebar from "./admin-sidebar"
 import AdminDoctors from "../../pages/admin/doctors"
+import AdminPatients from "../../pages/admin/patients"
 
 export default function AdminLayout() {
   return (
@@ -13,7 +14,7 @@ export default function AdminLayout() {
           <Route index element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="doctors" element={<AdminDoctors />} />
-          <Route path="patients" element={<div>Patients Page</div>} />
+          <Route path="patients" element={<AdminPatients />} />
           <Route path="analytics" element={<div>Analytics Page</div>} />
           <Route path="settings" element={<div>Settings Page</div>} />
         </Routes>

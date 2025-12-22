@@ -18,15 +18,15 @@ export const getAnalyticsReport = createAsyncThunk(
     }
   }
 );
-export const getSummeryReport = createAsyncThunk(
-  "user/admin-summery",
+export const getPatientList = createAsyncThunk(
+  "admin/patient-list",
   async (paramsData: Record<string, any>, { rejectWithValue }) => {
     try {
       const api = useAxios();
-      const { data }: any = await api.get(`${API_URL}/admin/summery`, {
+      const { data }: any = await api.get(`${API_URL}/patients`, {
         params: paramsData,
       });
-      return data?.data;
+      return data;
     } catch (err: any) {
       return rejectWithValue(err.message);
     }
