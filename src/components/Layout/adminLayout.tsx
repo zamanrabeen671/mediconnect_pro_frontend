@@ -5,6 +5,7 @@ import AdminDoctors from "../../pages/admin/doctors"
 import AdminPatients from "../../pages/admin/patients"
 import AdminSettings from "../../pages/admin/settings"
 import { CreateMedicine } from "../common/createmedicine"
+import { PatientDetails } from "../patient/patientDetails"
 
 export default function AdminLayout() {
   return (
@@ -20,7 +21,7 @@ export default function AdminLayout() {
           <Route path="analytics" element={<div>Analytics Page</div>} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="create-medicine" element={<CreateMedicine />} />
-
+          <Route path="patient/:id/details" element={<PatientDetails />} />
         </Routes>
       </div>
     </div>

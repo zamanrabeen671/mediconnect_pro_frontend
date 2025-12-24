@@ -3,7 +3,6 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { getPatientList } from "../../store/API/adminApi";
-import AdminSidebar from "../../components/Layout/admin-sidebar";
 
 export default function AdminPatients() {
   const dispatch = useAppDispatch();

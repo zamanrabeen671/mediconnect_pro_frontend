@@ -29,4 +29,17 @@ export const createBloodGroup = createAsyncThunk(
       return thunkAPI.rejectWithValue(err.message);
     }
   }
-)
+);
+
+export const getPatientDetails = createAsyncThunk(
+  "patient/getPatientDetails",
+  async (patientId: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data }: any = await api.get(`${API_URL}/patients/${patientId}`);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
