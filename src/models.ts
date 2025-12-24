@@ -158,3 +158,11 @@ export type PaymentPaginationType = {
   data?: ExpensesType[];
   total?: number;
 };
+
+export type MedicineType = {
+  id?: number;
+  name?: string;
+  strength?: string;
+  form?: string;
+  manufacturer?: string;
+};

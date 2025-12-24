@@ -1,10 +1,12 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { getPatientList } from "../API/adminApi";
+import { deleteMedicine, getMedicineById, getMedicineList, getPatientList, searchMedicineByName, updateMedicine } from "../API/adminApi";
 
 interface AdminState {
   pendingDoctors: any[];
   approvedDoctors: any[];
   patients: any[];
+  medicines: any[];
+  selectedMedicine: any | null;
   stats: {
     totalDoctors: number;
     totalPatients: number;
@@ -17,6 +19,8 @@ interface AdminState {
 const initialState: AdminState = {
   pendingDoctors: [],
   approvedDoctors: [],
+   medicines: [],
+  selectedMedicine: null,
   patients: [],
   stats: {
     totalDoctors: 0,
@@ -49,11 +53,37 @@ const adminSlice = createSlice({
     ) => {
       state.stats = { ...state.stats, ...action.payload };
     },
+    clearSelectedMedicine: (state) => {
+      state.selectedMedicine = null;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(getPatientList.fulfilled, (state, action) => {
       state.loading = false;
       state.patients = action.payload;
+    });
+     builder.addCase(getMedicineList.fulfilled, (state, action) => {
+      state.loading = false;
+      state.medicines = action.payload;
+    });
+     builder.addCase(searchMedicineByName.fulfilled, (state, action) => {
+      state.loading = false;
+      state.medicines = action.payload;
+    });
+     builder.addCase(getMedicineById.fulfilled, (state, action) => {
+      state.loading = false;
+      state.selectedMedicine = action.payload;
+    });
+    builder.addCase(deleteMedicine.fulfilled, (state, action) => {
+      state.loading = false;
+      state.medicines = state.medicines.filter((medicine: any) => medicine.id !== action.payload);
+    });
+    builder.addCase(updateMedicine.fulfilled, (state, action) => {
+      state.loading = false;
+      const index = state.medicines.findIndex((medicine: any) => medicine.id === action.payload.id);
+      if (index !== -1) {
+        state.medicines[index] = action.payload;
+      }
     });
   },
 });
@@ -63,5 +93,6 @@ export const {
   setApprovedDoctors,
   setAdminPatients,
   updateStats,
+  clearSelectedMedicine,
 } = adminSlice.actions;
 export default adminSlice.reducer;
