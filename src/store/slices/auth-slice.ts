@@ -7,6 +7,11 @@ export interface User {
   name: string
   role: "admin" | "doctor" | "patient"
   status?: string
+  phone?: string
+  gender?: string
+  age?: number
+  blood_group_id?: number | null
+  address?: string
 }
 
 interface AuthState {
