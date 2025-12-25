@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
-import { doctorSchedule, getDoctorAppointmentList, getDoctorList, getDoctorPatientList } from "../API/doctorApi"
+import { doctorSchedule, doctorUpdateAppointmentStatus, getDoctorAppointmentList, getDoctorList, getDoctorPatientList } from "../API/doctorApi"
 
 export interface DoctorProfile {
   specialization: string
@@ -51,22 +51,19 @@ const doctorSlice = createSlice({
         state.loading = false;
         state.doctorList = action.payload;
       });
-      builder.addCase(doctorSchedule.pending, (state) => {
-        state.loading = true;
-      });
       builder.addCase(doctorSchedule.fulfilled, (state, action) => {
         state.loading = false;
-        state.schedule = action.payload || [];
-      });
-      builder.addCase(doctorSchedule.rejected, (state, action) => {
-        state.loading = false;
-        console.error("Failed to fetch doctor schedules:", action.payload);
-        state.schedule = [];
+        state.schedule = action.payload;
       });
       builder.addCase(getDoctorAppointmentList.fulfilled, (state, action) => {
         state.loading = false;
         state.appointmentList = action.payload;
       });
+      builder.addCase(doctorUpdateAppointmentStatus.fulfilled, (state, action) => {
+        const updated = action.payload as any
+        if (!updated?.id) return
+        state.appointmentList = state.appointmentList.map((a) => (a.id === updated.id ? { ...a, ...updated } : a))
+      })
       builder.addCase(getDoctorPatientList.fulfilled, (state, action) => {
         state.loading = false;
         state.patientList = action.payload;

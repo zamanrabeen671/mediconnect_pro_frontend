@@ -6,6 +6,7 @@ import DoctorAppointments from "../../pages/doctor/appointments";
 import CreateAppointment from "../appointment/appointmentCreate";
 import DoctorSettings from "../../pages/doctor/settings";
 import DoctorPatients from "../../pages/doctor/patients";
+import DoctorPatientPrescription from "../../pages/doctor/patient-prescription";
 import DoctorSchedulePage from "../../pages/doctor/schedule";
 import DoctorScheduleAddPage from "../../pages/doctor/schedule-add";
 
@@ -28,6 +29,7 @@ export default function DoctorLayout() {
 
           {/* Patients */}
           <Route path="patients" element={<DoctorPatients />} />
+          <Route path="patient/:patientId/prescription" element={<DoctorPatientPrescription />} />
 
           {/* Schedule */}
           <Route path="schedule" element={<DoctorSchedulePage />} />
