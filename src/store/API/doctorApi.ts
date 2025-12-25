@@ -73,15 +73,15 @@ export const doctorUpdate = createAsyncThunk(
 );
 export const doctorScheduleCreate = createAsyncThunk(
   "user/scheduleCreate",
-  async (data: any, thunkAPI) => {
-    const { router, postData } = data;
+  async (postData: any, thunkAPI) => {
     try {
       const api = useAxios();
       const response = await api.post(`${API_URL}/schedules`, postData);
-      router(`/settings`);
       return response?.data;
     } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.message);
+      const errorMessage = err?.response?.data?.message || err?.message || "Failed to create schedule. Please ensure you are logged in.";
+      console.error("Schedule creation error:", { err, errorMessage });
+      return thunkAPI.rejectWithValue(errorMessage);
     }
   }
 );
@@ -90,10 +90,42 @@ export const doctorSchedule = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const api = useAxios();
-      const response = await api.get(`${API_URL}/schedules/me`);
-      return response?.data;
+      // Try to get doctor ID from auth state
+      const state = thunkAPI.getState() as any;
+      const doctorId = state?.auth?.user?.id;
+      
+      if (!doctorId) {
+        console.error("Doctor ID not found in auth state");
+        return [];
+      }
+      
+      console.log("Fetching doctor schedules for doctor ID:", doctorId);
+      const response = await api.get(`${API_URL}/schedules/doctor/${doctorId}`);
+      console.log("Doctor schedules response:", response?.data);
+      return response?.data || [];
     } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.message);
+      console.error("Doctor schedule fetch error:", err);
+      const errorMsg = typeof err === "string" ? err : err?.message || "Failed to fetch schedules";
+      return thunkAPI.rejectWithValue(errorMsg);
+    }
+  }
+);
+export const doctorScheduleDelete = createAsyncThunk(
+  "user/scheduleDelete",
+  async (id: number, thunkAPI) => {
+    try {
+      const api = useAxios();
+      await api.delete(`${API_URL}/schedules/${id}`);
+      // Refresh schedules after delete
+      const state = thunkAPI.getState() as any;
+      const doctorId = state?.auth?.user?.id;
+      if (doctorId) {
+        thunkAPI.dispatch(doctorSchedule());
+      }
+      return id;
+    } catch (err: any) {
+      console.error("Schedule delete error:", err);
+      return thunkAPI.rejectWithValue(err?.message || "Failed to delete schedule");
     }
   }
 );

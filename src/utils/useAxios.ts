@@ -22,11 +22,17 @@ const useAxios = () => {
       },
 
       (error) => {
+        console.error("API Error:", error);
         if (axios.isAxiosError(error) && error.response) {
-          console.log(error)
           const status = error.response?.status;
+          const errorData = error.response?.data;
           const errorMessage =
-            error.response?.data?.message || "An unexpected error occurred.";
+            errorData?.message || 
+            errorData?.detail || 
+            errorData?.error ||
+            (typeof errorData === 'string' ? errorData : "An unexpected error occurred.");
+
+          console.error("API Response Error:", { status, errorData, errorMessage });
 
           if (status === 401) {
             // Handle unauthorized error
@@ -53,8 +59,9 @@ const useAxios = () => {
           });
         }
 
+        console.error("Network or unexpected error:", error);
         return Promise.reject({
-          message: "An unexpected error occurred.",
+          message: error?.message || "An unexpected error occurred.",
           status: 0,
         });
 

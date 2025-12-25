@@ -1,8 +1,16 @@
-import { useAppSelector } from "../../store/hooks"
-import { FaCalendarAlt, FaUserInjured, FaFileAlt, FaCog } from "react-icons/fa"
+import { useEffect } from "react"
+import { useAppDispatch, useAppSelector } from "../../store/hooks"
+import { FaCalendarAlt, FaUserInjured, FaFileAlt, FaCog, FaClock } from "react-icons/fa"
+import { doctorSchedule } from "../../store/API/doctorApi"
 
 export default function DoctorDashboard() {
+  const dispatch = useAppDispatch()
   const { user } = useAppSelector((state) => state.auth)
+  const { schedule } = useAppSelector((state) => state.doctor)
+
+  useEffect(() => {
+    dispatch(doctorSchedule())
+  }, [dispatch])
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -83,6 +91,29 @@ export default function DoctorDashboard() {
                   <div className="text-sm text-muted-foreground">Update profile & preferences</div>
                 </div>
               </button>
+            </div>
+          </div>
+
+          {/* My Schedule */}
+          <div className="bg-card border border-border rounded-xl p-6 mb-8">
+            <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+              <FaClock className="text-accent" /> My Schedule
+            </h2>
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {(schedule || []).slice(0, 6).map((slot: any) => (
+                <div key={slot.id} className="rounded-xl border border-border bg-background p-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-foreground">{slot.day_of_week}</span>
+                    <span className="text-muted-foreground">{slot.duration_per_appointment} min</span>
+                  </div>
+                  <div className="mt-2 text-sm text-muted-foreground">
+                    {slot.start_time?.slice(0, 5)} - {slot.end_time?.slice(0, 5)} • Max {slot.max_patients}
+                  </div>
+                </div>
+              ))}
+              {!schedule?.length && (
+                <p className="text-sm text-muted-foreground">No schedules yet. Create one from the Schedule page.</p>
+              )}
             </div>
           </div>
 

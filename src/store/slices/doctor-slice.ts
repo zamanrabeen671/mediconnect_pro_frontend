@@ -51,9 +51,17 @@ const doctorSlice = createSlice({
         state.loading = false;
         state.doctorList = action.payload;
       });
+      builder.addCase(doctorSchedule.pending, (state) => {
+        state.loading = true;
+      });
       builder.addCase(doctorSchedule.fulfilled, (state, action) => {
         state.loading = false;
-        state.schedule = action.payload;
+        state.schedule = action.payload || [];
+      });
+      builder.addCase(doctorSchedule.rejected, (state, action) => {
+        state.loading = false;
+        console.error("Failed to fetch doctor schedules:", action.payload);
+        state.schedule = [];
       });
       builder.addCase(getDoctorAppointmentList.fulfilled, (state, action) => {
         state.loading = false;
