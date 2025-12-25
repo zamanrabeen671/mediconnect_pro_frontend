@@ -43,3 +43,27 @@ export const getPatientDetails = createAsyncThunk(
     }
   }
 );
+export const getPatientAppointment = createAsyncThunk(
+  "patient/getPatientAppointment",
+  async (patientId: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data }: any = await api.get(`${API_URL}/appointments/patient/${patientId}`);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+export const getPatientPrescriptions = createAsyncThunk(
+  "patient/getPatientPrescriptions",
+  async (patientId: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data }: any = await api.get(`${API_URL}/prescriptions/patient/${patientId}`);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);

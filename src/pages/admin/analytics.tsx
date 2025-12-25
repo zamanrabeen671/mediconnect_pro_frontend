@@ -1,10 +1,31 @@
-import { FaUserMd, FaUserInjured, FaCalendarCheck, FaDollarSign } from "react-icons/fa"
-import AdminSidebar from "../../components/Layout/admin-sidebar"
+import { useEffect, useMemo } from "react"
+import { useAppDispatch, useAppSelector } from "../../store/hooks"
+import { getTopMedicines, getAppointmentsOverview, getPopularSpecializations } from "../../store/API/adminApi"
 
 export default function AdminAnalytics() {
+  const dispatch = useAppDispatch()
+  const topMedicines = useAppSelector((s) => s.admin.topMedicineList)
+  const appointmentOverview = useAppSelector((s) => s.admin.appointmentOverview)
+  const popularSpecializations = useAppSelector((s) => s.admin.popularSpecializations)
+
+  useEffect(() => {
+    dispatch(getTopMedicines(10))
+    dispatch(getAppointmentsOverview(7))
+    dispatch(getPopularSpecializations(10))
+  }, [dispatch])
+
+  const maxAppointment = useMemo(() => {
+    if (!appointmentOverview || !appointmentOverview.length) return 1
+    return Math.max(...appointmentOverview.map((d) => d.count, 1))
+  }, [appointmentOverview])
+
+  const maxSpec = useMemo(() => {
+    if (!popularSpecializations || !popularSpecializations.length) return 1
+    return Math.max(...popularSpecializations.map((s) => s.count, 1))
+  }, [popularSpecializations])
+
   return (
     <div className="flex min-h-screen bg-background">
-      <AdminSidebar />
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -13,82 +34,25 @@ export default function AdminAnalytics() {
             <p className="text-muted-foreground">Monitor platform performance and metrics</p>
           </div>
 
-          {/* Overview Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <FaUserMd className="w-6 h-6 text-blue-600" />
-                </div>
-                <div className="flex items-center gap-1 text-green-600">
-                  {/* <FaTrendUp className="w-4 h-4" /> */}
-                  <span className="text-sm font-medium">+12%</span>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground mb-1">Total Doctors</p>
-              <p className="text-3xl font-bold text-foreground">145</p>
-            </div>
-
-            <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-green-50 rounded-lg">
-                  <FaUserInjured className="w-6 h-6 text-green-600" />
-                </div>
-                <div className="flex items-center gap-1 text-green-600">
-                  {/* <FaTrendUp className="w-4 h-4" /> */}
-                  <span className="text-sm font-medium">+23%</span>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground mb-1">Total Patients</p>
-              <p className="text-3xl font-bold text-foreground">1,284</p>
-            </div>
-
-            <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-purple-50 rounded-lg">
-                  <FaCalendarCheck className="w-6 h-6 text-purple-600" />
-                </div>
-                <div className="flex items-center gap-1 text-red-600">
-                  {/* <FaTrendDown className="w-4 h-4" /> */}
-                  <span className="text-sm font-medium">-5%</span>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground mb-1">Appointments</p>
-              <p className="text-3xl font-bold text-foreground">3,642</p>
-            </div>
-
-            <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-yellow-50 rounded-lg">
-                  <FaDollarSign className="w-6 h-6 text-yellow-600" />
-                </div>
-                <div className="flex items-center gap-1 text-green-600">
-                  {/* <FaTrendUp className="w-4 h-4" /> */}
-                  <span className="text-sm font-medium">+18%</span>
-                </div>
-              </div>
-              <p className="text-sm text-muted-foreground mb-1">Revenue</p>
-              <p className="text-3xl font-bold text-foreground">$52,420</p>
-            </div>
-          </div>
-
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Appointments Chart */}
             <div className="bg-card border border-border rounded-lg p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Appointments Overview</h3>
               <div className="h-64 flex items-end justify-between gap-2">
-                {[65, 78, 52, 89, 73, 82, 95].map((height, index) => (
-                  <div key={index} className="flex-1 flex flex-col items-center gap-2">
-                    <div
-                      className="w-full bg-accent rounded-t-lg transition-all hover:bg-accent/80"
-                      style={{ height: `${height}%` }}
-                    />
-                    <span className="text-xs text-muted-foreground">
-                      {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index]}
-                    </span>
-                  </div>
-                ))}
+                {appointmentOverview && appointmentOverview.length ? (
+                  appointmentOverview.map((d) => (
+                    <div key={d.date} className="flex-1 flex flex-col items-center gap-2">
+                      <div
+                        className="w-full bg-accent rounded-t-lg transition-all hover:bg-accent/80"
+                        style={{ height: `${Math.round((d.count / Math.max(maxAppointment, 1)) * 100)}%` }}
+                      />
+                      <span className="text-xs text-muted-foreground">{new Date(d.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-sm text-muted-foreground">No appointment data.</div>
+                )}
               </div>
             </div>
 
@@ -96,87 +60,50 @@ export default function AdminAnalytics() {
             <div className="bg-card border border-border rounded-lg p-6">
               <h3 className="text-lg font-semibold text-foreground mb-4">Popular Specializations</h3>
               <div className="space-y-4">
-                {[
-                  { name: "Cardiology", count: 32, percentage: 85 },
-                  { name: "Neurology", count: 28, percentage: 72 },
-                  { name: "Pediatrics", count: 24, percentage: 65 },
-                  { name: "Orthopedics", count: 21, percentage: 58 },
-                  { name: "Dermatology", count: 18, percentage: 48 },
-                ].map((spec, index) => (
-                  <div key={index}>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-foreground font-medium">{spec.name}</span>
-                      <span className="text-muted-foreground">{spec.count} doctors</span>
+                {popularSpecializations && popularSpecializations.length ? (
+                  popularSpecializations.map((spec: any, index: number) => (
+                    <div key={index}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-foreground font-medium">{spec.specialization || 'Unknown'}</span>
+                        <span className="text-muted-foreground">{spec.count} doctors</span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2">
+                        <div
+                          className="bg-accent h-2 rounded-full transition-all"
+                          style={{ width: `${Math.round((spec.count / Math.max(maxSpec, 1)) * 100)}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div
-                        className="bg-accent h-2 rounded-full transition-all"
-                        style={{ width: `${spec.percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <div className="text-sm text-muted-foreground">No specialization data.</div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Recent Activity */}
+          {/* Top Medicines */}
           <div className="bg-card border border-border rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Recent Activity</h3>
-            <div className="space-y-4">
-              {[
-                {
-                  action: "New doctor registration",
-                  user: "Dr. Sarah Johnson",
-                  time: "2 hours ago",
-                  type: "doctor",
-                },
-                {
-                  action: "Appointment completed",
-                  user: "John Doe with Dr. Michael Chen",
-                  time: "3 hours ago",
-                  type: "appointment",
-                },
-                {
-                  action: "New patient registration",
-                  user: "Jane Smith",
-                  time: "5 hours ago",
-                  type: "patient",
-                },
-                {
-                  action: "Doctor profile approved",
-                  user: "Dr. Emily Rodriguez",
-                  time: "6 hours ago",
-                  type: "approval",
-                },
-              ].map((activity, index) => (
-                <div key={index} className="flex items-center gap-4 p-4 bg-muted rounded-lg">
-                  <div
-                    className={`p-3 rounded-full ${
-                      activity.type === "doctor"
-                        ? "bg-blue-50 text-blue-600"
-                        : activity.type === "patient"
-                          ? "bg-green-50 text-green-600"
-                          : activity.type === "appointment"
-                            ? "bg-purple-50 text-purple-600"
-                            : "bg-yellow-50 text-yellow-600"
-                    }`}
-                  >
-                    {activity.type === "doctor" ? (
-                      <FaUserMd className="w-5 h-5" />
-                    ) : activity.type === "patient" ? (
-                      <FaUserInjured className="w-5 h-5" />
-                    ) : (
-                      <FaCalendarCheck className="w-5 h-5" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-foreground font-medium">{activity.action}</p>
-                    <p className="text-sm text-muted-foreground">{activity.user}</p>
-                  </div>
-                  <span className="text-sm text-muted-foreground">{activity.time}</span>
-                </div>
-              ))}
+            <h3 className="text-lg font-semibold text-foreground mb-4">Top Medicines</h3>
+            <div className="space-y-3">
+              {topMedicines && topMedicines.length ? (
+                topMedicines.map((row: any, idx: number) => {
+                  // backend returns { medicine: {...}, used }
+                  const med = row.medicine ?? row[0] ?? row
+                  const used = row.used ?? row[1] ?? 0
+                  return (
+                    <div key={idx} className="flex items-center justify-between p-3 border border-border rounded-lg">
+                      <div>
+                        <div className="font-medium text-foreground">{med.name}</div>
+                        <div className="text-sm text-muted-foreground">{med.strength || ''} {med.form ? `• ${med.form}` : ''}</div>
+                      </div>
+                      <div className="text-sm text-muted-foreground">{used} uses</div>
+                    </div>
+                  )
+                })
+              ) : (
+                <div className="text-sm text-muted-foreground">No data available.</div>
+              )}
             </div>
           </div>
         </div>

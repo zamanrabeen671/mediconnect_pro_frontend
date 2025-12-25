@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router"
 import { FaPhone, FaMapMarkerAlt } from "react-icons/fa"
 import { useAppDispatch, useAppSelector } from "../../store/hooks"
@@ -11,6 +11,8 @@ export const PatientDetails: React.FC = () => {
   const navigate = useNavigate()
 
   const patient = useAppSelector(s => s.patient.patientDetails)
+  const patientPrescriptions = useAppSelector(s => s.patient.patientPrescriptions);
+  const patientAppointments = useAppSelector(s => s.patient.patientAppointments);
   const loading = useAppSelector(s => s.patient.loading)
 
   useEffect(() => {
@@ -28,8 +30,11 @@ export const PatientDetails: React.FC = () => {
       .toUpperCase()
   }
 
+  const [openAppointments, setOpenAppointments] = useState(true)
+  const [openPrescriptions, setOpenPrescriptions] = useState(false)
+
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="w-full">
       <div className="bg-white shadow rounded-lg p-6">
         {loading && (
           <div className="animate-pulse space-y-4">
@@ -39,80 +44,95 @@ export const PatientDetails: React.FC = () => {
         )}
 
         {!loading && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-            {/* Avatar / Basic */}
-            <div className="flex flex-col items-center md:items-start">
-              <div className="w-28 h-28 rounded-full bg-accent text-white flex items-center justify-center text-2xl font-semibold">
+          <div className="space-y-6">
+            {/* Top minimal card */}
+            <div className="flex items-center gap-6">
+              <div className="w-20 h-20 rounded-full bg-accent text-white flex items-center justify-center text-xl font-semibold">
                 {initials(patient?.full_name)}
               </div>
-              <h2 className="mt-4 text-lg font-semibold">{patient?.full_name || "Unknown Patient"}</h2>
-              <p className="text-sm text-muted mt-1">{patient?.gender ? patient.gender : "-"} • {patient?.age ?? "-"} yrs</p>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold">{patient?.full_name || "Unknown Patient"}</h2>
+                    <p className="text-sm text-muted mt-1">{patient?.gender ?? "-"} • {patient?.age ?? "-"} yrs</p>
+                  </div>
 
-              <div className="mt-4 flex gap-2">
-                <button
-                  onClick={() => navigate(-1)}
-                  className="px-3 py-2 bg-muted/60 rounded-md text-sm"
-                >
-                  Back
-                </button>
+                  <div className="text-right">
+                    <button
+                      onClick={() => navigate(-1)}
+                      className="px-3 py-2 bg-muted/60 rounded-md text-sm"
+                    >
+                      Back
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 mt-3 text-sm text-muted">
+                  <div className="flex items-center gap-2"><FaPhone /> {patient?.phone || "-"}</div>
+                  <div className="flex items-center gap-2"><FaMapMarkerAlt /> {patient?.address || "-"}</div>
+                  <div className="ml-4"><span className="px-3 py-1 bg-muted rounded-full text-sm">{patient?.blood_group?.name || "-"}</span></div>
+                </div>
               </div>
             </div>
 
-            {/* Details */}
-            <div className="md:col-span-2 space-y-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-sm text-muted">Contact</h3>
-                  <div className="flex items-center gap-3 mt-2">
-                    <div className="flex items-center gap-2 text-sm text-muted">
-                      <FaPhone /> {patient?.phone || "-"}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted">
-                      <FaMapMarkerAlt /> {patient?.address || "-"}
-                    </div>
-                  </div>
-                </div>
+            {/* Accordions */}
+            <div className="space-y-4">
+              {/* Appointments Accordion */}
+              <div className="border rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setOpenAppointments(v => !v)}
+                  className="w-full text-left px-4 py-3 bg-muted/5 flex items-center justify-between"
+                >
+                  <span className="font-medium">Appointments</span>
+                  <span className="text-sm text-muted">{openAppointments ? '−' : '+'}</span>
+                </button>
 
-                <div className="text-right">
-                  <h3 className="text-sm text-muted">Blood Group</h3>
-                  <div className="mt-2">
-                    <span className="px-3 py-1 bg-muted rounded-full text-sm">{patient?.blood_group?.name || "-"}</span>
+                {openAppointments && (
+                  <div className="p-4 bg-white">
+                    {patientAppointments && patientAppointments.length ? (
+                      <ul className="space-y-2">
+                        {patientAppointments.map((a: any) => (
+                          <li key={a.id} className="p-3 bg-muted/10 rounded-md flex justify-between items-center">
+                            <div>
+                              <div className="font-medium">{a.doctor_name || a.doctor || 'Appointment'}</div>
+                              <div className="text-sm text-muted">{a.date || a.slot || '-'}</div>
+                            </div>
+                            <div className="text-sm text-muted">{a.status || '-'}</div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-muted">No appointments found.</p>
+                    )}
                   </div>
-                </div>
+                )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-muted/20 rounded-lg">
-                  <h4 className="text-sm font-medium">Personal</h4>
-                  <p className="text-sm mt-2"><span className="font-semibold">Name:</span> {patient?.full_name || "-"}</p>
-                  <p className="text-sm mt-1"><span className="font-semibold">Age:</span> {patient?.age ?? "-"}</p>
-                  <p className="text-sm mt-1"><span className="font-semibold">Gender:</span> {patient?.gender || "-"}</p>
-                </div>
+              {/* Prescriptions Accordion */}
+              <div className="border rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setOpenPrescriptions(v => !v)}
+                  className="w-full text-left px-4 py-3 bg-muted/5 flex items-center justify-between"
+                >
+                  <span className="font-medium">Prescriptions</span>
+                  <span className="text-sm text-muted">{openPrescriptions ? '−' : '+'}</span>
+                </button>
 
-                <div className="p-4 bg-muted/20 rounded-lg">
-                  <h4 className="text-sm font-medium">Contact & Address</h4>
-                  <p className="text-sm mt-2"><span className="font-semibold">Phone:</span> {patient?.phone || "-"}</p>
-                  <p className="text-sm mt-1"><span className="font-semibold">Address:</span> {patient?.address || "-"}</p>
-                </div>
-              </div>
-
-              {/* Appointments preview (if available) */}
-              <div>
-                <h4 className="text-sm font-medium">Recent Appointments</h4>
-                {patient && (patient as any).appointments && (patient as any).appointments.length ? (
-                  <ul className="mt-3 space-y-2">
-                    {(patient as any).appointments.slice(0, 5).map((a: any) => (
-                      <li key={a.id} className="p-3 bg-white border rounded-md flex justify-between items-center">
-                        <div>
-                          <div className="font-medium">{a.doctor_name || a.doctor || "Appointment"}</div>
-                          <div className="text-sm text-muted">{a.date || a.slot || "-"}</div>
-                        </div>
-                        <div className="text-sm text-muted">{a.status || "-"}</div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-2 text-sm text-muted">No recent appointments found.</p>
+                {openPrescriptions && (
+                  <div className="p-4 bg-white">
+                    {patientPrescriptions && patientPrescriptions.length ? (
+                      <ul className="space-y-2">
+                        {patientPrescriptions.map((p: any) => (
+                          <li key={p.id} className="p-3 bg-muted/10 rounded-md">
+                            <div className="font-medium">{p.title || p.description || 'Prescription'}</div>
+                            <div className="text-sm text-muted mt-1">{p.date || p.created_at || ''}</div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-muted">No prescriptions found.</p>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
