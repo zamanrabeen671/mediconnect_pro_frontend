@@ -2,6 +2,46 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import useAxios from "../../utils/useAxios";
 import { API_URL } from "../../settings/config";
 
+export const getCurrentPatientProfile = createAsyncThunk(
+  "patient/getCurrentPatientProfile",
+  async (_, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      // Fetch current user info from /users/me
+      const { data: userData }: any = await api.get(`${API_URL}/users/me`);
+      console.log("User data from /me:", userData);
+      
+      // If the user response includes patient details directly, return them
+      if (userData.patient) {
+        console.log("Found patient in user data:", userData.patient);
+        return userData.patient;
+      }
+      
+      // If user has a patient_id, fetch the patient details
+      if (userData.patient_id) {
+        console.log("Fetching patient by patient_id:", userData.patient_id);
+        const patientRes: any = await api.get(`${API_URL}/patients/${userData.patient_id}`);
+        return patientRes.data;
+      }
+      
+      // Otherwise, fetch all patients and find by user_id
+      console.log("Fetching all patients to find by user_id:", userData.id);
+      const patientsRes: any = await api.get(`${API_URL}/patients`);
+      console.log("Patients response:", patientsRes.data);
+      
+      // Handle both array and object responses
+      const patientsList = Array.isArray(patientsRes.data) ? patientsRes.data : [patientsRes.data];
+      const currentPatient = patientsList.find((p: any) => p.user_id === userData.id);
+      
+      console.log("Found patient:", currentPatient);
+      return currentPatient || null;
+    } catch (err: any) {
+      console.error("Error loading patient profile:", err);
+      return rejectWithValue(err.message || "Unable to load patient profile.");
+    }
+  }
+);
+
 export const getBloodGroupList = createAsyncThunk(
   "blood_group/getBloodGroupList",
   async (_, { rejectWithValue }) => {

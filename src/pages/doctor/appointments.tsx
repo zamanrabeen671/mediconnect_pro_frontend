@@ -38,8 +38,13 @@ export default function DoctorAppointments() {
   const completedAppointments =
     appointmentList?.filter((a) => a.status === "completed").length || 0;
 
-  const handleFollowup = (patientId: number) => {
-    navigate(`/doctor/patient/${patientId}/prescription`);
+  const handleFollowup = (appointmentId: number, patientId: number) => {
+    navigate(`/doctor/patient/${patientId}/prescription`, {
+      state: {
+        appointmentId,
+        patientId,
+      },
+    });
   };
 
   const updateStatus = async (appointmentId: number, status: string) => {
@@ -261,7 +266,7 @@ export default function DoctorAppointments() {
                         )}
 
                         <button
-                          onClick={() => handleFollowup(appointment.patient.id)}
+                          onClick={() => handleFollowup(appointment.id, appointment.patient.id)}
                           className="group relative p-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
                           title="Follow-up"
                         >

@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router"
 
 import { API_URL } from "../../settings/config"
 import { getDoctorList } from "../../store/API/doctorApi"
-import { createAppointmentByPatient, getBloodGroupList } from "../../store/API/patientApi"
+import { createAppointmentByPatient, getBloodGroupList, getCurrentPatientProfile } from "../../store/API/patientApi"
 import { useAppDispatch, useAppSelector } from "../../store/hooks"
 import useAxios from "../../utils/useAxios"
 
@@ -29,6 +29,14 @@ const formatTime = (value: string) => {
   return `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`
  }
 
+const formatDays = (value: string) =>
+  value
+    .split(",")
+    .map((day) => day.trim())
+    .filter(Boolean)
+    .map((day) => day.charAt(0).toUpperCase() + day.slice(1))
+    .join(", ")
+
 export default function PatientAppointmentBook() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
@@ -38,12 +46,12 @@ export default function PatientAppointmentBook() {
   const { bloodGroups } = useAppSelector((state) => state.patient)
 
   const [patientForm, setPatientForm] = useState(() => ({
-    full_name: user?.name || "",
-    age: user?.age ? String(user.age) : "",
-    gender: user?.gender || "",
-    phone: user?.phone || "",
-    blood_group_id: user?.blood_group_id !== undefined && user?.blood_group_id !== null ? String(user.blood_group_id) : "",
-    address: user?.address || "",
+    full_name: "",
+    age: "",
+    gender: "",
+    phone: "",
+    blood_group_id: "",
+    address: "",
   }))
 
   const [selectedDoctor, setSelectedDoctor] = useState("")
@@ -54,8 +62,22 @@ export default function PatientAppointmentBook() {
   const [doctorLoading, setDoctorLoading] = useState(false)
   const [status, setStatus] = useState<StatusMessage | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [patientProfileLoading, setPatientProfileLoading] = useState(true)
 
   const today = useMemo(() => new Date().toISOString().split("T")[0], [])
+
+  const canSubmit = Boolean(
+    !patientProfileLoading &&
+    patientForm.full_name.trim() &&
+    patientForm.phone.trim() &&
+    patientForm.age &&
+    patientForm.gender &&
+    patientForm.address.trim() &&
+    selectedDoctor &&
+    selectedSchedule &&
+    appointmentDate &&
+    !submitting
+  )
 
   useEffect(() => {
     const state = location.state as { doctorId?: number } | null
@@ -65,20 +87,9 @@ export default function PatientAppointmentBook() {
   }, [location.state])
 
   useEffect(() => {
-    if (!user) return
-    setPatientForm((prev) => ({
-      full_name: user.name || prev.full_name,
-      age: user.age ? String(user.age) : prev.age,
-      gender: user.gender || prev.gender,
-      phone: user.phone || prev.phone,
-      blood_group_id: user.blood_group_id !== undefined && user.blood_group_id !== null ? String(user.blood_group_id) : prev.blood_group_id,
-      address: user.address || prev.address,
-    }))
-  }, [user])
-
-  useEffect(() => {
     const loadReferenceData = async () => {
       setDoctorLoading(true)
+      setPatientProfileLoading(true)
       try {
         await dispatch(getDoctorList({})).unwrap()
       } catch (err: any) {
@@ -87,10 +98,33 @@ export default function PatientAppointmentBook() {
         setDoctorLoading(false)
       }
       dispatch(getBloodGroupList())
+
+      // Fetch current patient profile if user is logged in
+      if (user?.id) {
+        try {
+          const patientData = await dispatch(getCurrentPatientProfile()).unwrap()
+          if (patientData) {
+            setPatientForm({
+              full_name: patientData.full_name || "",
+              age: patientData.age ? String(patientData.age) : "",
+              gender: patientData.gender || "",
+              phone: patientData.phone || "",
+              blood_group_id: patientData.blood_group?.id ? String(patientData.blood_group.id) : "",
+              address: patientData.address || "",
+            })
+          }
+        } catch (err: any) {
+          console.log("No patient profile found or error:", err)
+        } finally {
+          setPatientProfileLoading(false)
+        }
+      } else {
+        setPatientProfileLoading(false)
+      }
     }
 
     loadReferenceData()
-  }, [dispatch])
+  }, [dispatch, user?.id])
 
   useEffect(() => {
     const fetchSchedule = async (doctorId: string) => {
@@ -210,7 +244,7 @@ export default function PatientAppointmentBook() {
         )}
 
         <div className="grid gap-6 lg:grid-cols-3">
-          <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-6">
+          <form id="appointmentForm" onSubmit={handleSubmit} className="lg:col-span-2 space-y-6">
             <div className="rounded-2xl border border-border bg-card shadow-sm">
               <div className="flex items-center justify-between border-b border-border px-6 py-4">
                 <div className="flex items-center gap-3">
@@ -229,9 +263,8 @@ export default function PatientAppointmentBook() {
                     type="text"
                     value={patientForm.full_name}
                     onChange={handlePatientChange("full_name")}
-                    placeholder="Patient full name"
-                    className="mt-2 w-full rounded-lg border border-border bg-muted px-3 py-3 text-sm text-muted-foreground"
-                    disabled
+                    placeholder="Enter your full name"
+                    className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-3 text-sm focus:border-accent focus:outline-none"
                   />
                 </div>
 
@@ -241,9 +274,8 @@ export default function PatientAppointmentBook() {
                     type="number"
                     value={patientForm.age}
                     onChange={handlePatientChange("age")}
-                    placeholder="18"
-                    className="mt-2 w-full rounded-lg border border-border bg-muted px-3 py-3 text-sm text-muted-foreground"
-                    disabled
+                    placeholder="Enter your age"
+                    className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-3 text-sm focus:border-accent focus:outline-none"
                   />
                 </div>
 
@@ -252,8 +284,7 @@ export default function PatientAppointmentBook() {
                   <select
                     value={patientForm.gender}
                     onChange={handlePatientChange("gender")}
-                    className="mt-2 w-full rounded-lg border border-border bg-muted px-3 py-3 text-sm text-muted-foreground"
-                    disabled
+                    className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-3 text-sm focus:border-accent focus:outline-none"
                   >
                     <option value="">Select</option>
                     <option value="Male">Male</option>
@@ -270,9 +301,8 @@ export default function PatientAppointmentBook() {
                     type="tel"
                     value={patientForm.phone}
                     onChange={handlePatientChange("phone")}
-                    placeholder="01XXXXXXXXX"
-                    className="mt-2 w-full rounded-lg border border-border bg-muted px-3 py-3 text-sm text-muted-foreground"
-                    disabled
+                    placeholder="Enter phone number"
+                    className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-3 text-sm focus:border-accent focus:outline-none"
                   />
                 </div>
 
@@ -283,8 +313,7 @@ export default function PatientAppointmentBook() {
                   <select
                     value={patientForm.blood_group_id}
                     onChange={handlePatientChange("blood_group_id")}
-                    className="mt-2 w-full rounded-lg border border-border bg-muted px-3 py-3 text-sm text-muted-foreground"
-                    disabled
+                    className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-3 text-sm focus:border-accent focus:outline-none"
                   >
                     <option value="">Select</option>
                     {bloodGroups?.map((bg: any) => (
@@ -303,9 +332,8 @@ export default function PatientAppointmentBook() {
                     type="text"
                     value={patientForm.address}
                     onChange={handlePatientChange("address")}
-                    placeholder="Street, city, country"
-                    className="mt-2 w-full rounded-lg border border-border bg-muted px-3 py-3 text-sm text-muted-foreground"
-                    disabled
+                    placeholder="Enter your address"
+                    className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-3 text-sm focus:border-accent focus:outline-none"
                   />
                 </div>
               </div>
@@ -360,32 +388,41 @@ export default function PatientAppointmentBook() {
                       <p className="text-sm text-muted-foreground">No schedules found for this doctor.</p>
                     )}
                     {!scheduleLoading && schedules.length > 0 && (
-                      <div className="space-y-2">
+                      <div className="grid gap-3">
                         {schedules.map((schedule) => {
-                          const label = `${schedule.day_of_week} • ${formatTime(schedule.start_time)} - ${formatTime(schedule.end_time)}`
+                          const dayLabel = formatDays(schedule.day_of_week)
+                          const timeLabel = `${formatTime(schedule.start_time)} - ${formatTime(schedule.end_time)}`
+                          const isSelected = selectedSchedule === String(schedule.id)
                           return (
                             <label
                               key={schedule.id}
-                              className={`flex items-center justify-between rounded-lg border px-3 py-3 text-sm transition hover:border-accent ${
-                                selectedSchedule === String(schedule.id) ? "border-accent bg-accent/5" : "border-border bg-background"
+                              className={`flex flex-col gap-3 rounded-xl border px-4 py-4 text-sm transition hover:border-accent/80 hover:shadow-sm ${
+                                isSelected ? "border-accent bg-accent/5" : "border-border bg-background"
                               }`}
                             >
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-start gap-3">
                                 <input
                                   type="radio"
                                   name="schedule"
                                   value={schedule.id}
-                                  checked={selectedSchedule === String(schedule.id)}
+                                  checked={isSelected}
                                   onChange={(e) => setSelectedSchedule(e.target.value)}
+                                  className="mt-1 h-4 w-4 text-accent focus:ring-accent"
                                 />
-                                <div>
-                                  <p className="font-medium text-foreground">{label}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {schedule.duration_per_appointment} min slots • up to {schedule.max_patients} patients
-                                  </p>
+                                <div className="flex-1 space-y-1">
+                                  <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+                                    <FaClock />
+                                    <span>{dayLabel}</span>
+                                  </div>
+                                  <p className="text-base font-semibold text-foreground">{timeLabel}</p>
+                                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                    <span className="rounded-full bg-accent/10 px-2 py-1 font-medium text-accent">
+                                      {schedule.duration_per_appointment} min slots
+                                    </span>
+                                    <span className="rounded-full bg-muted px-2 py-1">up to {schedule.max_patients} patients</span>
+                                  </div>
                                 </div>
                               </div>
-                              <FaClock className="text-muted-foreground" />
                             </label>
                           )
                         })}
@@ -394,23 +431,36 @@ export default function PatientAppointmentBook() {
                   </div>
                 </div>
               </div>
+
+              <div className="flex justify-end px-6 pb-6">
+                <button
+                  type="submit"
+                  form="appointmentForm"
+                  disabled={!canSubmit}
+                  className="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <FaCalendarCheck />
+                  Book appointment
+                </button>
+              </div>
             </div>
 
-            <div className="flex justify-between gap-3">
+            <div className="flex justify-end gap-3">
+              <button
+                type="submit"
+                form="appointmentForm"
+                disabled={!canSubmit}
+                className="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <FaCalendarCheck />
+                {submitting ? "Booking..." : "Book appointment"}
+              </button>
               <button
                 type="button"
                 onClick={() => navigate(-1)}
                 className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-3 text-sm font-semibold text-foreground hover:bg-muted"
               >
                 Back
-              </button>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-60"
-              >
-                <FaCalendarCheck />
-                {submitting ? "Booking..." : "Book appointment"}
               </button>
             </div>
           </form>
@@ -439,7 +489,7 @@ export default function PatientAppointmentBook() {
                       ? (() => {
                           const schedule = schedules.find((s) => String(s.id) === selectedSchedule)
                           return schedule
-                            ? `${schedule.day_of_week} • ${formatTime(schedule.start_time)} - ${formatTime(schedule.end_time)}`
+                            ? `${formatDays(schedule.day_of_week)} • ${formatTime(schedule.start_time)} - ${formatTime(schedule.end_time)}`
                             : "Selected"
                         })()
                       : "Not selected"}
@@ -450,6 +500,15 @@ export default function PatientAppointmentBook() {
                   <span className="font-medium text-foreground">{appointmentDate || "Not selected"}</span>
                 </div>
               </div>
+              <button
+                form="appointmentForm"
+                type="submit"
+                disabled={!canSubmit}
+                className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-white bg-slate-600 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <FaCalendarCheck />
+                {submitting ? "Booking..." : "Book appointment"}
+              </button>
             </div>
 
             <div className="rounded-2xl border border-border bg-muted/60 p-5 text-sm text-muted-foreground">

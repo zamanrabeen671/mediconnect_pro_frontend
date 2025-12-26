@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import { useParams } from "react-router"
-import { FaPrescriptionBottleAlt, FaPlus, FaSave } from "react-icons/fa"
+import { useLocation, useParams } from "react-router"
+import { FaPrescriptionBottleAlt, FaSave } from "react-icons/fa"
 import useAxios from "../../utils/useAxios"
 import { API_URL } from "../../settings/config"
 import { useNavigate } from "react-router"
@@ -49,6 +49,8 @@ type Prescription = {
 
 export default function DoctorPatientPrescription() {
   const { patientId } = useParams()
+  const location = useLocation()
+  const locationState = location.state as { appointmentId?: number; patientId?: number } | null
   const navigate = useNavigate()
   const api = useAxios()
   const { user } = useAppSelector((s) => s.auth)
@@ -61,14 +63,18 @@ export default function DoctorPatientPrescription() {
   const [medicines, setMedicines] = useState<Medicine[]>([])
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([])
 
-  const [appointmentId, setAppointmentId] = useState<string>("")
+  const [appointmentId, setAppointmentId] = useState<string>(() =>
+    locationState?.appointmentId ? String(locationState.appointmentId) : ""
+  )
   const [medicineId, setMedicineId] = useState<string>("")
   const [dosage, setDosage] = useState("1 tab")
   const [duration, setDuration] = useState("7 days")
   const [instruction, setInstruction] = useState("After meal")
   const [notes, setNotes] = useState("")
   const [submitting, setSubmitting] = useState(false)
-  const [selectedPatient, setSelectedPatient] = useState<string>(patientId || "")
+  const [selectedPatient, setSelectedPatient] = useState<string>(
+    patientId || (locationState?.patientId ? String(locationState.patientId) : "")
+  )
 
   // Initial load: patients + medicines
   useEffect(() => {
@@ -94,6 +100,12 @@ export default function DoctorPatientPrescription() {
     }
     loadLists()
   }, [])
+
+  useEffect(() => {
+    if (locationState?.appointmentId) {
+      setAppointmentId(String(locationState.appointmentId))
+    }
+  }, [locationState?.appointmentId])
 
   // Load selected patient detail/appointments/prescriptions
   useEffect(() => {

@@ -32,7 +32,7 @@ export const getUser = createAsyncThunk(
     const api = useAxios();
     try {
       const { data } = await api.get(`${API_URL}/users/me`);
-      thunkAPI.dispatch(setUser(data.user));
+      thunkAPI.dispatch(setUser(data));
       return data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.message);
