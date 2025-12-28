@@ -6,39 +6,33 @@ import auth from "../../utils/auth";
 import axios from "axios";
 import { setUser } from "../slices/auth-slice";
 
-export const login = createAsyncThunk(
-  "login",
-  async (data: any, thunkAPI) => {
-    const {postData, router} = data;
-    const { email, password } = postData;
-    try {
-      const api = axios.create({ baseURL: API_URL });
-      const response = await api.post("/auth/login", { email, password });
-      auth.setToken(response.data.token);
-      auth.setUserInfo(response.data.user);
-      thunkAPI.dispatch(setUser(response.data.user));
-      router(`/${response.data.user.role}`);
-      return response.data;
-    } catch (error: any) {
-      console.log(error);
-      return thunkAPI.rejectWithValue(error?.message || "An error occurred.");
-    }
+export const login = createAsyncThunk("login", async (data: any, thunkAPI) => {
+  const { postData, router } = data;
+  const { email, password } = postData;
+  try {
+    const api = axios.create({ baseURL: API_URL });
+    const response = await api.post("/auth/login", { email, password });
+    auth.setToken(response.data.token);
+    auth.setUserInfo(response.data.user);
+    thunkAPI.dispatch(setUser(response.data.user));
+    router(`/${response.data.user.role}`);
+    return response.data;
+  } catch (error: any) {
+    console.log(error);
+    return thunkAPI.rejectWithValue(error?.message || "An error occurred.");
   }
-);
+});
 
-export const getUser = createAsyncThunk(
-  "user/getUser",
-  async (_,thunkAPI ) => {
-    const api = useAxios();
-    try {
-      const { data } = await api.get(`${API_URL}/users/me`);
-      thunkAPI.dispatch(setUser(data.user));
-      return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.message);
-    }
+export const getUser = createAsyncThunk("user/getUser", async (_, thunkAPI) => {
+  const api = useAxios();
+  try {
+    const { data } = await api.get(`${API_URL}/users/me`);
+    thunkAPI.dispatch(setUser(data.user));
+    return data;
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(err.message);
   }
-);
+});
 
 export const getUserList = createAsyncThunk(
   "user/getUserList",
@@ -60,8 +54,6 @@ export const userCreate = createAsyncThunk(
   async (data: any, thunkAPI) => {
     const { router, postData } = data;
     try {
-
-
       const response = await axios.post(`${API_URL}/auth/register`, postData);
       router(`/sign-in`);
       return response?.data;
@@ -90,10 +82,7 @@ export const userUpdate = createAsyncThunk(
     const { router, postData } = data;
     try {
       const api = useAxios();
-      const response = await api.put(
-        `${API_URL}/users/update`,
-        postData
-      );
+      const response = await api.put(`${API_URL}/users/update`, postData);
       router(`/user/list`);
       return response.data;
     } catch (err: any) {
@@ -209,6 +198,52 @@ export const deleteUser = createAsyncThunk(
       return response.data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
+
+export const patientSignin = createAsyncThunk(
+  "patient/signin",
+  async (data: any, thunkAPI) => {
+    const { postData, router } = data;
+    const { phone } = postData;
+
+    try {
+      const api = axios.create({ baseURL: API_URL });
+
+      const response = await api.post("/users/patients/signin", {
+        phone,
+      });
+      auth.setToken(response.data.token);
+      auth.setUserInfo(response.data.patient);
+      thunkAPI.dispatch(setUser(response.data.patient));
+      router(`/patient/dashboard`);
+      return response.data;
+    } catch (error: any) {
+      console.log(error);
+      return thunkAPI.rejectWithValue(error?.message || "An error occurred.");
+    }
+  }
+);
+
+export const patientVerifyOtp = createAsyncThunk(
+  "patient/verify-otp",
+  async (data: any, thunkAPI) => {
+    const { postData, router } = data;
+    const { phone, otp } = postData;
+
+    try {
+      const api = axios.create({ baseURL: API_URL });
+
+      const response = await api.post("/users/patients/verify-otp", {
+        phone,
+        otp,
+      });
+      router(`/patient/reset-password/${response.data.patientId}`);
+      return response.data;
+    } catch (error: any) {
+      console.log(error);
+      return thunkAPI.rejectWithValue(error?.message || "An error occurred.");
     }
   }
 );
