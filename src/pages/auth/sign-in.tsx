@@ -1,7 +1,3 @@
-"use client"
-
-import type React from "react"
-
 import { useState } from "react"
 import { useAppDispatch } from "../../store/hooks"
 import { FaEnvelope, FaLock } from "react-icons/fa"
@@ -9,7 +5,6 @@ import { Link, useNavigate } from "react-router"
 import { login } from "../../store/API/userApis"
 
 export default function SignIn() {
-  const [signInType, setSignInType] = useState<"normal" | "patient-otp">("normal")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -35,9 +30,7 @@ export default function SignIn() {
     }
   }
 
-  const handlePatientOTPSignIn = () => {
-    navigate("/sign-in/patient-otp")
-  }
+ 
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -48,36 +41,12 @@ export default function SignIn() {
           <p className="text-muted-foreground mt-2">Sign in to your account</p>
         </div>
 
-        {/* Sign In Type Selection */}
-        <div className="bg-card border border-border rounded-xl p-6 shadow-sm mb-6">
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => setSignInType("normal")}
-              className={`p-4 rounded-lg font-medium transition-all ${
-                signInType === "normal"
-                  ? "bg-accent text-accent-foreground border-2 border-accent"
-                  : "bg-muted text-muted-foreground border-2 border-transparent hover:border-accent/50"
-              }`}
-            >
-              Normal Sign In
-            </button>
-            <button
-              onClick={() => setSignInType("patient-otp")}
-              className={`p-4 rounded-lg font-medium transition-all ${
-                signInType === "patient-otp"
-                  ? "bg-accent text-accent-foreground border-2 border-accent"
-                  : "bg-muted text-muted-foreground border-2 border-transparent hover:border-accent/50"
-              }`}
-            >
-              Patient OTP
-            </button>
-          </div>
-        </div>
+        
 
         {/* Sign In Form */}
         <div className="bg-card border border-border rounded-xl p-8 shadow-sm">
-          {signInType === "normal" ? (
-            // Normal Sign In Form
+         
+           
             <form onSubmit={handleNormalSignIn} className="space-y-6">
               {error && (
                 <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm">
@@ -126,30 +95,8 @@ export default function SignIn() {
                 Sign In
               </button>
             </form>
-          ) : (
-            // Patient OTP Sign In Info
-            <div className="space-y-6 py-4">
-              {error && (
-                <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
-              
-              <div className="text-center space-y-2">
-                <p className="text-foreground font-medium">Sign in as Patient with OTP</p>
-                <p className="text-sm text-muted-foreground">
-                  Enter your phone number to receive an OTP
-                </p>
-              </div>
-
-              <button
-                onClick={handlePatientOTPSignIn}
-                className="w-full bg-accent text-accent-foreground py-3 rounded-lg font-medium hover:bg-accent/90 transition-colors"
-              >
-                Continue with OTP
-              </button>
-            </div>
-          )}
+          
+        
 
           <div className="mt-6 text-center text-sm">
             <p className="text-muted-foreground">

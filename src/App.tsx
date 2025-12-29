@@ -10,7 +10,6 @@ import DoctorLayout from "./components/Layout/doctorLayout";
 import LandingPage from "./pages/landing";
 import SignIn from "./pages/auth/sign-in";
 import SignUp from "./pages/auth/sign-up";
-import PatientSign from "./pages/auth/patientSign";
 import DoctorProfileCompletion from "./pages/doctor/profile-completion";
 import PatientDashboard from "./pages/patient/dashboard";
 import { PendingDoctor } from "./components/common/pendingdoctor";
@@ -35,10 +34,6 @@ function App() {
         <Route
           path="/sign-in"
           element={!isAuthenticated ? <SignIn /> : <Navigate to={`/${user?.role}`} />}
-        />
-        <Route
-          path="/sign-in/patient-otp"
-          element={!isAuthenticated ? <PatientSign /> : <Navigate to={`/${user?.role}`} />}
         />
         <Route
           path="/sign-up"
