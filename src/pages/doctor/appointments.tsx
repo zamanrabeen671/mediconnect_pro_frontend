@@ -13,6 +13,8 @@ import { useNavigate } from "react-router";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useEffect, useState } from "react";
 import { doctorUpdateAppointmentStatus, getDoctorAppointmentList } from "../../store/API/doctorApi";
+import useAxios from "../../utils/useAxios";
+import { BASE_URL } from "../../settings/config";
 
 export default function DoctorAppointments() {
   const navigate = useNavigate();
@@ -20,6 +22,8 @@ export default function DoctorAppointments() {
   const { appointmentList } = useAppSelector((state) => state.doctor);
   const { user } = useAppSelector((state) => state.auth);
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
+  const [followupLoadingId, setFollowupLoadingId] = useState<number | null>(null);
+  const api = useAxios();
 
   useEffect(() => {
     dispatch(getDoctorAppointmentList(user?.id!));
@@ -38,7 +42,30 @@ export default function DoctorAppointments() {
   const completedAppointments =
     appointmentList?.filter((a) => a.status === "completed").length || 0;
 
-  const handleFollowup = (appointmentId: number, patientId: number) => {
+  const handleFollowup = async (appointmentId: number, patientId: number) => {
+    setFollowupLoadingId(appointmentId);
+    try {
+      const res = await api.get(`${BASE_URL}/prescriptions/appointment/${appointmentId}/`);
+      const data = Array.isArray(res.data) ? res.data[0] : res.data;
+
+      if (data?.id) {
+        navigate(`/doctor/patient/${patientId}/prescription`, {
+          state: {
+            appointmentId,
+            patientId,
+            prescriptionId: data.id,
+          },
+        });
+        return;
+      }
+    } catch (err: any) {
+      if (err?.response?.status !== 404) {
+        console.error("Failed to check prescription", err);
+      }
+    } finally {
+      setFollowupLoadingId(null);
+    }
+
     navigate(`/doctor/patient/${patientId}/prescription`, {
       state: {
         appointmentId,
@@ -267,8 +294,9 @@ export default function DoctorAppointments() {
 
                         <button
                           onClick={() => handleFollowup(appointment.id, appointment.patient.id)}
-                          className="group relative p-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                          className="group relative p-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors disabled:opacity-60"
                           title="Follow-up"
+                          disabled={followupLoadingId === appointment.id}
                         >
                           <FaPrescriptionBottleAlt className="w-5 h-5" />
                           <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">

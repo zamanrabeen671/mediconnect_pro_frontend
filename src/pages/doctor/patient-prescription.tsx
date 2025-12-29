@@ -51,7 +51,7 @@ type Prescription = {
 export default function DoctorPatientPrescription() {
   const { patientId } = useParams()
   const location = useLocation()
-  const locationState = location.state as { appointmentId?: number; patientId?: number } | null
+  const locationState = location.state as { appointmentId?: number; patientId?: number; prescriptionId?: number } | null
   const navigate = useNavigate()
   const api = useAxios()
   const dispatch = useAppDispatch()
@@ -128,10 +128,25 @@ export default function DoctorPatientPrescription() {
 
         try {
           const presRes = await api.get(`${BASE_URL}/prescriptions/patient/${pid}/`)
-          setPrescriptions(presRes.data || [])
+          const list: Prescription[] = Array.isArray(presRes.data)
+            ? presRes.data
+            : presRes.data
+            ? [presRes.data]
+            : []
+          setPrescriptions(list)
+
+          if (locationState?.prescriptionId) {
+            const match = list.find((p) => p.id === Number(locationState.prescriptionId))
+            if (match) {
+              setCurrentPrescription(match)
+            }
+          } else {
+            setCurrentPrescription(null)
+          }
         } catch (presErr: any) {
           if (presErr?.response?.status === 404) {
             setPrescriptions([])
+            setCurrentPrescription(null)
           } else {
             throw presErr
           }
@@ -193,7 +208,18 @@ export default function DoctorPatientPrescription() {
       
       // Refresh prescriptions list
       const presRes = await api.get(`${BASE_URL}/prescriptions/patient/${pid}/`)
-      setPrescriptions(presRes.data || [])
+      const list: Prescription[] = Array.isArray(presRes.data)
+        ? presRes.data
+        : presRes.data
+        ? [presRes.data]
+        : []
+      setPrescriptions(list)
+      if (locationState?.prescriptionId) {
+        const match = list.find((p) => p.id === Number(locationState.prescriptionId))
+        if (match) {
+          setCurrentPrescription(match)
+        }
+      }
       
       setNotes("")
       setAppointmentId("")
@@ -237,10 +263,15 @@ export default function DoctorPatientPrescription() {
       // Refresh prescriptions list
       const pid = selectedPatient || patientId
       const presRes = await api.get(`${BASE_URL}/prescriptions/patient/${pid}/`)
-      setPrescriptions(presRes.data || [])
+      const list: Prescription[] = Array.isArray(presRes.data)
+        ? presRes.data
+        : presRes.data
+        ? [presRes.data]
+        : []
+      setPrescriptions(list)
       
       // Update current prescription
-      const updatedPrescription = presRes.data?.find((p: Prescription) => p.id === currentPrescription.id)
+      const updatedPrescription = list.find((p: Prescription) => p.id === currentPrescription.id)
       if (updatedPrescription) {
         setCurrentPrescription(updatedPrescription)
       }
