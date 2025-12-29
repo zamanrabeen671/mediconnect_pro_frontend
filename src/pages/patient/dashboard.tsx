@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react"
-import { FaArrowRight, FaCalendarPlus, FaPrescription, FaSearch, FaUserMd } from "react-icons/fa"
+import { useEffect, useMemo, useState } from "react"
+import { FaArrowRight, FaCalendarAlt, FaCalendarCheck, FaCalendarPlus, FaClock, FaPrescription, FaSearch, FaUserMd } from "react-icons/fa"
 import { useNavigate } from "react-router"
 
 import { getDoctorList } from "../../store/API/doctorApi"
-import { getAppointmentPrescriptions, getPatientPrescriptions } from "../../store/API/patientApi"
+import { getAppointmentPrescriptions, getPatientAppointments, getPatientPrescriptions } from "../../store/API/patientApi"
 import { useAppDispatch, useAppSelector } from "../../store/hooks"
 
 export default function PatientDashboard() {
@@ -11,15 +11,41 @@ export default function PatientDashboard() {
   const navigate = useNavigate()
   const { user } = useAppSelector((state) => state.auth)
   const { doctorList } = useAppSelector((state) => state.doctor)
-  const { prescriptions } = useAppSelector((state) => state.patient)
+  const { prescriptions, appointments } = useAppSelector((state) => state.patient)
   const [appointmentId, setAppointmentId] = useState("")
 
   useEffect(() => {
     dispatch(getDoctorList({}))
     if (user?.id) {
       dispatch(getPatientPrescriptions(user.id))
+      dispatch(getPatientAppointments(user.id))
     }
   }, [dispatch, user?.id])
+
+  const upcomingAppointments = useMemo(() => {
+    if (!appointments?.length) return []
+    const doctorIndex = new Map((doctorList || []).map((doc: any) => [doc.id, doc]))
+    const safeTime = (value: string | null | undefined) => {
+      if (!value) return Number.MAX_SAFE_INTEGER
+      const time = Date.parse(value)
+      return Number.isFinite(time) ? time : Number.MAX_SAFE_INTEGER
+    }
+
+    return appointments
+      .slice()
+      .sort((a: any, b: any) => safeTime(a.appointment_date) - safeTime(b.appointment_date))
+      .slice(0, 3)
+      .map((appointment: any) => {
+        const doctor = doctorIndex.get(appointment.doctor_id)
+        const status = typeof appointment.status === "string" ? appointment.status : "Pending"
+        return {
+          ...appointment,
+          doctorName:
+            appointment.doctor_name || appointment.doctor?.name || doctor?.name || "Doctor visit",
+          statusLabel: status.charAt(0).toUpperCase() + status.slice(1),
+        }
+      })
+  }, [appointments, doctorList])
 
   return (
     <div className="min-h-screen bg-background">
@@ -30,7 +56,7 @@ export default function PatientDashboard() {
           <p className="text-muted-foreground">Book appointments, find doctors, and view prescriptions.</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <button
             onClick={() => navigate("/patient/book")}
             className="group flex items-center justify-between rounded-xl border border-border bg-card px-4 py-4 text-left transition hover:border-accent hover:shadow-sm"
@@ -42,6 +68,22 @@ export default function PatientDashboard() {
               <div>
                 <p className="text-lg font-semibold text-foreground">Book appointment</p>
                 <p className="text-sm text-muted-foreground">Create a new booking</p>
+              </div>
+            </div>
+              <FaArrowRight className="text-muted-foreground transition group-hover:text-accent" />
+          </button>
+
+          <button
+            onClick={() => navigate("/patient/appointments")}
+            className="group flex items-center justify-between rounded-xl border border-border bg-card px-4 py-4 text-left transition hover:border-accent hover:shadow-sm"
+          >
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-accent/10 p-3 text-accent">
+                <FaCalendarCheck />
+              </div>
+              <div>
+                <p className="text-lg font-semibold text-foreground">My appointments</p>
+                <p className="text-sm text-muted-foreground">{appointments?.length || 0} booked</p>
               </div>
             </div>
             <FaArrowRight className="text-muted-foreground transition group-hover:text-accent" />
@@ -78,6 +120,64 @@ export default function PatientDashboard() {
             </div>
             <FaArrowRight className="text-muted-foreground transition group-hover:text-accent" />
           </button>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-accent/10 p-3 text-accent">
+                <FaCalendarAlt />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Schedule</p>
+                <h2 className="text-xl font-semibold text-foreground">Upcoming appointments</h2>
+              </div>
+            </div>
+            {appointments?.length ? (
+              <button
+                onClick={() => navigate("/patient/appointments")}
+                className="text-sm font-semibold text-accent hover:underline"
+              >
+                View all
+              </button>
+            ) : null}
+          </div>
+
+          {!upcomingAppointments.length ? (
+            <p className="text-sm text-muted-foreground">
+              You have no upcoming appointments. Book your next visit to see it here.
+            </p>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-3">
+              {upcomingAppointments.map((appointment: any) => (
+                <div key={appointment.id} className="rounded-xl border border-border/70 bg-background p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {appointment.statusLabel}
+                  </p>
+                  <h3 className="mt-1 text-lg font-semibold text-foreground">{appointment.doctorName}</h3>
+                  <div className="mt-3 space-y-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <FaCalendarCheck className="text-accent" />
+                      {appointment.appointment_date}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FaClock className="text-accent" />
+                      {appointment.appointment_time || "Time pending"}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() =>
+                      navigate("/patient/book", { state: { doctorId: appointment.doctor_id, followUpFor: appointment.id } })
+                    }
+                    className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-accent hover:underline"
+                  >
+                    Book follow-up
+                    <FaArrowRight />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">

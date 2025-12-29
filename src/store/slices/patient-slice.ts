@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
-import { getAppointmentPrescriptions, getBloodGroupList, getPatientPrescriptions } from "../API/patientApi"
+import { getAppointmentPrescriptions, getBloodGroupList, getPatientAppointments, getPatientPrescriptions } from "../API/patientApi"
 
 interface PatientState {
   appointments: any[]
@@ -40,6 +40,10 @@ const patientSlice = createSlice({
     builder.addCase(getAppointmentPrescriptions.fulfilled, (state, action) => {
       state.loading = false;
       state.prescriptions = action.payload;
+    });
+    builder.addCase(getPatientAppointments.fulfilled, (state, action) => {
+      state.loading = false;
+      state.appointments = action.payload || [];
     });
 
   },

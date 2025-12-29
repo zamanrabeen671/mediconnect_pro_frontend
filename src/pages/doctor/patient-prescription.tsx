@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
 import { useLocation, useParams } from "react-router"
-import { FaPrescriptionBottleAlt, FaSave } from "react-icons/fa"
+import { FaPrescriptionBottleAlt, FaSave, FaPlus } from "react-icons/fa"
 import useAxios from "../../utils/useAxios"
-import { API_URL } from "../../settings/config"
+import { API_URL, BASE_URL } from "../../settings/config"
 import { useNavigate } from "react-router"
-import { useAppSelector } from "../../store/hooks"
+import { useAppSelector, useAppDispatch } from "../../store/hooks"
+import { createPrescription, addMedicineToPrescription } from "../../store/API/doctorApi"
 
 type Medicine = {
   id: number
@@ -53,6 +54,7 @@ export default function DoctorPatientPrescription() {
   const locationState = location.state as { appointmentId?: number; patientId?: number } | null
   const navigate = useNavigate()
   const api = useAxios()
+  const dispatch = useAppDispatch()
   const { user } = useAppSelector((s) => s.auth)
 
   const [loading, setLoading] = useState(true)
@@ -62,6 +64,7 @@ export default function DoctorPatientPrescription() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [medicines, setMedicines] = useState<Medicine[]>([])
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([])
+  const [currentPrescription, setCurrentPrescription] = useState<Prescription | null>(null)
 
   const [appointmentId, setAppointmentId] = useState<string>(() =>
     locationState?.appointmentId ? String(locationState.appointmentId) : ""
@@ -83,8 +86,8 @@ export default function DoctorPatientPrescription() {
       setError(null)
       try {
         const [patientsRes, medsRes] = await Promise.all([
-          api.get(`${API_URL}/patients`),
-          api.get(`${API_URL}/medicines`),
+          api.get(`${API_URL}/patients/`),
+          api.get(`${API_URL}/medicines/`),
         ])
         const fetchedPatients = patientsRes.data || []
         setPatients(fetchedPatients)
@@ -120,12 +123,19 @@ export default function DoctorPatientPrescription() {
       setError(null)
       try {
         const pid = selectedPatient
-        const [patientRes, presRes] = await Promise.all([
-          api.get(`${API_URL}/patients/${pid}`),
-          api.get(`${API_URL}/prescriptions/patient/${pid}`),
-        ])
+        const patientRes = await api.get(`${API_URL}/patients/${pid}`)
         setPatient(patientRes.data)
-        setPrescriptions(presRes.data || [])
+
+        try {
+          const presRes = await api.get(`${BASE_URL}/prescriptions/patient/${pid}/`)
+          setPrescriptions(presRes.data || [])
+        } catch (presErr: any) {
+          if (presErr?.response?.status === 404) {
+            setPrescriptions([])
+          } else {
+            throw presErr
+          }
+        }
 
         // Try patient appointments; if backend returns validation error, fallback to doctor appointments filtered by patient
         try {
@@ -166,38 +176,84 @@ export default function DoctorPatientPrescription() {
       setError("Select an appointment")
       return
     }
-    if (!medicineId) {
-      setError("Select a medicine")
-      return
-    }
+    
     setSubmitting(true)
     try {
       const payload = {
         appointment_id: Number(appointmentId),
         patient_id: Number(pid),
         notes: notes || "",
-        medicines: [
-          {
-            medicine_id: Number(medicineId),
-            dosage,
-            duration,
-            instruction,
-          },
-        ],
+        medicines: [],
       }
-      const res = await api.post(`${API_URL}/prescriptions`, payload)
-      // refresh list
-      const presRes = await api.get(`${API_URL}/prescriptions/patient/${pid}`)
+      
+      const result = await dispatch(createPrescription(payload)).unwrap()
+      
+      // Set current prescription for adding medicines
+      setCurrentPrescription(result)
+      
+      // Refresh prescriptions list
+      const presRes = await api.get(`${BASE_URL}/prescriptions/patient/${pid}/`)
       setPrescriptions(presRes.data || [])
+      
       setNotes("")
+      setAppointmentId("")
+      
+      setError(null)
+      alert("Prescription created successfully! You can now add medicines.")
+    } catch (err: any) {
+      setError(err || "Failed to create prescription")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleAddMedicine = async () => {
+    if (!currentPrescription) {
+      setError("Create a prescription first")
+      return
+    }
+    
+    if (!medicineId) {
+      setError("Select a medicine")
+      return
+    }
+    
+    setError(null)
+    setSubmitting(true)
+    
+    try {
+      const medicineData = {
+        medicine_id: Number(medicineId),
+        dosage,
+        duration,
+        instruction,
+      }
+      
+      await dispatch(addMedicineToPrescription({
+        prescriptionId: currentPrescription.id,
+        medicine: medicineData
+      })).unwrap()
+      
+      // Refresh prescriptions list
+      const pid = selectedPatient || patientId
+      const presRes = await api.get(`${BASE_URL}/prescriptions/patient/${pid}/`)
+      setPrescriptions(presRes.data || [])
+      
+      // Update current prescription
+      const updatedPrescription = presRes.data?.find((p: Prescription) => p.id === currentPrescription.id)
+      if (updatedPrescription) {
+        setCurrentPrescription(updatedPrescription)
+      }
+      
+      // Reset medicine form
+      setMedicineId("")
       setDosage("1 tab")
       setDuration("7 days")
       setInstruction("After meal")
-      setMedicineId("")
-      setAppointmentId("")
-      return res.data
+      
+      alert("Medicine added successfully!")
     } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || "Failed to add prescription")
+      setError(err || "Failed to add medicine")
     } finally {
       setSubmitting(false)
     }
@@ -259,85 +315,128 @@ export default function DoctorPatientPrescription() {
           )}
 
           {/* Add prescription (doctor only) */}
-          <div className="p-4 border rounded-lg bg-white shadow-sm space-y-4">
-            <div className="flex items-center gap-2 text-lg font-semibold">
-              <FaPrescriptionBottleAlt /> Add Medicine
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Appointment</label>
-                <select
-                  value={appointmentId}
-                  onChange={(e) => setAppointmentId(e.target.value)}
-                  className="input"
+          {!currentPrescription && (
+            <div className="p-4 border rounded-lg bg-white shadow-sm space-y-4">
+              <div className="flex items-center gap-2 text-lg font-semibold">
+                <FaPrescriptionBottleAlt /> Create New Prescription
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Appointment</label>
+                  <select
+                    value={appointmentId}
+                    onChange={(e) => setAppointmentId(e.target.value)}
+                    className="input"
+                  >
+                    <option value="">Select appointment</option>
+                    {appointments.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.appointment_date} {a.appointment_time || ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">Notes</label>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="input"
+                    rows={3}
+                    placeholder="Add notes for the prescription..."
+                  />
+                </div>
+              </div>
+              {error && <div className="text-sm text-red-600">{error}</div>}
+              <div className="flex justify-end">
+                <button
+                  onClick={handleCreate}
+                  disabled={submitting}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white disabled:opacity-60 hover:bg-blue-700"
                 >
-                  <option value="">Select appointment</option>
-                  {appointments.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.appointment_date} {a.appointment_time || ""}
-                    </option>
-                  ))}
-                </select>
+                  <FaSave /> {submitting ? "Creating..." : "Create Prescription"}
+                </button>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Medicine</label>
-                <select
-                  value={medicineId}
-                  onChange={(e) => setMedicineId(e.target.value)}
-                  className="input"
+            </div>
+          )}
+
+          {/* Add Medicine to existing prescription */}
+          {currentPrescription && (
+            <div className="p-4 border rounded-lg bg-white shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-lg font-semibold">
+                  <FaPlus /> Add Medicine to Prescription #{currentPrescription.id}
+                </div>
+                <button
+                  onClick={() => setCurrentPrescription(null)}
+                  className="text-sm text-blue-600 hover:underline"
                 >
-                  <option value="">Select medicine</option>
-                  {medicines.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} {m.strength ? `- ${m.strength}` : ""} {m.form ? `(${m.form})` : ""}
-                    </option>
-                  ))}
-                </select>
+                  Create New Prescription
+                </button>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Dosage</label>
-                <input
-                  value={dosage}
-                  onChange={(e) => setDosage(e.target.value)}
-                  className="input"
-                />
+              <div className="p-3 bg-blue-50 rounded-lg text-sm">
+                <div className="font-medium">Current Prescription Details:</div>
+                <div className="text-muted-foreground mt-1">
+                  Appointment #{currentPrescription.appointment_id} • Patient ID: {currentPrescription.patient_id}
+                  {currentPrescription.notes && <div>Notes: {currentPrescription.notes}</div>}
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Duration</label>
-                <input
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                  className="input"
-                />
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Medicine</label>
+                  <select
+                    value={medicineId}
+                    onChange={(e) => setMedicineId(e.target.value)}
+                    className="input"
+                  >
+                    <option value="">Select medicine</option>
+                    {medicines.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name} {m.strength ? `- ${m.strength}` : ""} {m.form ? `(${m.form})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Dosage</label>
+                  <input
+                    value={dosage}
+                    onChange={(e) => setDosage(e.target.value)}
+                    className="input"
+                    placeholder="e.g., 1 tab"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Duration</label>
+                  <input
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                    className="input"
+                    placeholder="e.g., 7 days"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Instruction</label>
+                  <input
+                    value={instruction}
+                    onChange={(e) => setInstruction(e.target.value)}
+                    className="input"
+                    placeholder="e.g., After meal"
+                  />
+                </div>
               </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-1">Instruction</label>
-                <input
-                  value={instruction}
-                  onChange={(e) => setInstruction(e.target.value)}
-                  className="input"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-1">Notes</label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="input"
-                  rows={3}
-                />
+              {error && <div className="text-sm text-red-600">{error}</div>}
+              <div className="flex justify-end">
+                <button
+                  onClick={handleAddMedicine}
+                  disabled={submitting}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white disabled:opacity-60 hover:bg-green-700"
+                >
+                  <FaPlus /> {submitting ? "Adding..." : "Add Medicine"}
+                </button>
               </div>
             </div>
-            <div className="flex justify-end">
-              <button
-                onClick={handleCreate}
-                disabled={submitting}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground disabled:opacity-60"
-              >
-                <FaSave /> {submitting ? "Saving..." : "Save"}
-              </button>
-            </div>
-          </div>
+          )}
 
           {/* Existing prescriptions (read-only for patient) */}
           <div className="space-y-4">

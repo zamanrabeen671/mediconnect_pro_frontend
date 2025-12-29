@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import useAxios from "../../utils/useAxios";
-import { API_URL } from "../../settings/config";
+import { API_URL, BASE_URL } from "../../settings/config";
 import type { RootState } from "..";
 
 export const getDoctorList = createAsyncThunk(
@@ -206,6 +206,68 @@ export const createAppointmentWithPatient = createAsyncThunk(
     }
   }
 );
+
+export const createPrescription = createAsyncThunk(
+  "prescription/create",
+  async (postData: {
+    appointment_id: number;
+    patient_id: number;
+    notes: string;
+    medicines: Array<{
+      medicine_id: number;
+      dosage: string;
+      duration: string;
+      instruction: string;
+    }>;
+  }, thunkAPI) => {
+    try {
+      const api = useAxios();
+      const response = await api.post(`${BASE_URL}/prescriptions/`, postData);
+      return response.data;
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.detail || err?.response?.data?.message || err?.message || "Failed to create prescription";
+      return thunkAPI.rejectWithValue(errorMessage);
+    }
+  }
+);
+
+export const addMedicineToPrescription = createAsyncThunk(
+  "prescription/addMedicine",
+  async (data: {
+    prescriptionId: number;
+    medicine: {
+      medicine_id: number;
+      dosage: string;
+      duration: string;
+      instruction: string;
+    };
+  }, thunkAPI) => {
+    try {
+      const api = useAxios();
+      // First get the existing prescription
+      const prescriptionRes = await api.get(`${BASE_URL}/prescriptions/${data.prescriptionId}/`);
+      const prescription = prescriptionRes.data;
+      
+      // Add the new medicine to the medicines array
+      const updatedMedicines = [
+        ...(prescription.medicines || []),
+        data.medicine
+      ];
+      
+      // Update the prescription with the new medicines list
+      const response = await api.put(`${BASE_URL}/prescriptions/${data.prescriptionId}/`, {
+        ...prescription,
+        medicines: updatedMedicines
+      });
+      
+      return response.data;
+    } catch (err: any) {
+      const errorMessage = err?.response?.data?.detail || err?.response?.data?.message || err?.message || "Failed to add medicine";
+      return thunkAPI.rejectWithValue(errorMessage);
+    }
+  }
+);
+
 // export const brandDelete = createAsyncThunk(
 //   "user/brandDelete",
 //   async (id: number, thunkAPI) => {

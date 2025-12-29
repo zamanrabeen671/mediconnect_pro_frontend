@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import useAxios from "../../utils/useAxios";
-import { API_URL } from "../../settings/config";
+import { API_URL, BASE_URL } from "../../settings/config";
 
 export const getCurrentPatientProfile = createAsyncThunk(
   "patient/getCurrentPatientProfile",
@@ -55,6 +55,19 @@ export const getBloodGroupList = createAsyncThunk(
   }
 );
 
+export const getPatientAppointments = createAsyncThunk(
+  "patient/getPatientAppointments",
+  async (patientId: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.get(`${API_URL}/appointments/patient/${patientId}`);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Unable to load appointments.");
+    }
+  }
+);
+
 export const createAppointmentByPatient = createAsyncThunk(
   "patient/createAppointmentByPatient",
   async (payload: {
@@ -85,7 +98,7 @@ export const getPatientPrescriptions = createAsyncThunk(
   async (patientId: number, { rejectWithValue }) => {
     try {
       const api = useAxios();
-      const { data }: any = await api.get(`${API_URL}/prescriptions/patient/${patientId}`);
+      const { data }: any = await api.get(`${BASE_URL}/prescriptions/patient/${patientId}/`);
       return data;
     } catch (err: any) {
       return rejectWithValue(err.message || "Unable to load prescriptions.");
@@ -98,7 +111,7 @@ export const getAppointmentPrescriptions = createAsyncThunk(
   async (appointmentId: number, { rejectWithValue }) => {
     try {
       const api = useAxios();
-      const { data }: any = await api.get(`${API_URL}/prescriptions/appointment/${appointmentId}`);
+      const { data }: any = await api.get(`${BASE_URL}/prescriptions/appointment/${appointmentId}/`);
       return data;
     } catch (err: any) {
       return rejectWithValue(err.message || "Unable to load appointment prescriptions.");

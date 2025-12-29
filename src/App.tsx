@@ -14,6 +14,7 @@ import DoctorProfileCompletion from "./pages/doctor/profile-completion";
 import PatientDashboard from "./pages/patient/dashboard";
 import PatientAppointmentBook from "./pages/patient/appointment-book";
 import PatientDoctors from "./pages/patient/doctors";
+import PatientAppointments from "./pages/patient/appointments";
 import { PendingDoctor } from "./components/common/pendingdoctor";
 
 function App() {
@@ -87,6 +88,10 @@ function App() {
         <Route
           path="/patient/doctors"
           element={isAuthenticated && user?.role === "patient" ? <PatientDoctors /> : <Navigate to="/sign-in" />}
+        />
+        <Route
+          path="/patient/appointments"
+          element={isAuthenticated && user?.role === "patient" ? <PatientAppointments /> : <Navigate to="/sign-in" />}
         />
 
         {/* Admin routes */}
