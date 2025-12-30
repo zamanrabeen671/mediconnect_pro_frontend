@@ -11,14 +11,19 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { useEffect } from "react";
-import { getDoctorAppointmentList } from "../../store/API/doctorApi";
+import { useEffect, useState } from "react";
+import { doctorUpdateAppointmentStatus, getDoctorAppointmentList } from "../../store/API/doctorApi";
+import useAxios from "../../utils/useAxios";
+import { BASE_URL } from "../../settings/config";
 
 export default function DoctorAppointments() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { appointmentList } = useAppSelector((state) => state.doctor);
   const { user } = useAppSelector((state) => state.auth);
+  const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
+  const [followupLoadingId, setFollowupLoadingId] = useState<number | null>(null);
+  const api = useAxios();
 
   useEffect(() => {
     dispatch(getDoctorAppointmentList(user?.id!));
@@ -30,25 +35,56 @@ export default function DoctorAppointments() {
     ).length || 0;
 
   const upcomingAppointments =
-    appointmentList?.filter(
-      (a) => a.status === "pending" || a.status === "upcoming"
+    appointmentList?.filter((a) =>
+      ["pending", "upcoming", "accepted"].includes(a.status?.toLowerCase())
     ).length || 0;
 
   const completedAppointments =
     appointmentList?.filter((a) => a.status === "completed").length || 0;
 
-  const handleFollowup = (patientId: number) => {
-    navigate(`/doctor/patient/${patientId}/prescription`);
+  const handleFollowup = async (appointmentId: number, patientId: number) => {
+    setFollowupLoadingId(appointmentId);
+    try {
+      const res = await api.get(`${BASE_URL}/prescriptions/appointment/${appointmentId}/`);
+      const data = Array.isArray(res.data) ? res.data[0] : res.data;
+
+      if (data?.id) {
+        navigate(`/doctor/patient/${patientId}/prescription`, {
+          state: {
+            appointmentId,
+            patientId,
+            prescriptionId: data.id,
+          },
+        });
+        return;
+      }
+    } catch (err: any) {
+      if (err?.response?.status !== 404) {
+        console.error("Failed to check prescription", err);
+      }
+    } finally {
+      setFollowupLoadingId(null);
+    }
+
+    navigate(`/doctor/patient/${patientId}/prescription`, {
+      state: {
+        appointmentId,
+        patientId,
+      },
+    });
   };
 
-  const handleCompleted = (appointmentId: number) => {
-    // Add your complete appointment logic here
-    console.log("Complete appointment:", appointmentId);
-  };
-
-  const handleCancel = (appointmentId: number) => {
-    // Add your cancel appointment logic here
-    console.log("Cancel appointment:", appointmentId);
+  const updateStatus = async (appointmentId: number, status: string) => {
+    setActionLoadingId(appointmentId);
+    try {
+      await dispatch(
+        doctorUpdateAppointmentStatus({ id: appointmentId, status })
+      ).unwrap();
+    } catch (err) {
+      console.error("Failed to update appointment status", err);
+    } finally {
+      setActionLoadingId(null);
+    }
   };
 
   const formatTime = (time: string) => {
@@ -61,9 +97,13 @@ export default function DoctorAppointments() {
     switch (status?.toLowerCase()) {
       case "completed":
         return "bg-green-100 text-green-700";
+      case "accepted":
+        return "bg-emerald-100 text-emerald-700";
       case "pending":
         return "bg-yellow-100 text-yellow-700";
       case "cancelled":
+        return "bg-red-100 text-red-700";
+      case "rejected":
         return "bg-red-100 text-red-700";
       default:
         return "bg-blue-100 text-blue-700";
@@ -210,36 +250,57 @@ export default function DoctorAppointments() {
 
                       {/* Right Side - Action Buttons */}
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleCompleted(appointment.id)}
-                          className="group relative p-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
-                          title="Complete"
-                        >
-                          <FaCheckCircle className="w-5 h-5" />
-                          <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                            Complete
-                          </span>
-                        </button>
+                        {appointment.status === "pending" && (
+                          <button
+                            onClick={() => updateStatus(appointment.id, "accepted")}
+                            className="group relative p-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-60"
+                            title="Accept"
+                            disabled={actionLoadingId === appointment.id}
+                          >
+                            <FaCheckCircle className="w-5 h-5" />
+                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                              Accept
+                            </span>
+                          </button>
+                        )}
+
+                        {appointment.status !== "cancelled" && appointment.status !== "completed" && appointment.status !== "rejected" && (
+                          <button
+                            onClick={() => updateStatus(appointment.id, "rejected")}
+                            className="group relative p-3 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-60"
+                            title="Reject"
+                            disabled={actionLoadingId === appointment.id}
+                          >
+                            <FaTimes className="w-5 h-5" />
+                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                              Reject
+                            </span>
+                          </button>
+                        )}
+
+                        {(appointment.status === "accepted" || appointment.status === "upcoming") && (
+                          <button
+                            onClick={() => updateStatus(appointment.id, "completed")}
+                            className="group relative p-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-60"
+                            title="Complete"
+                            disabled={actionLoadingId === appointment.id}
+                          >
+                            <FaCheckCircle className="w-5 h-5" />
+                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                              Complete
+                            </span>
+                          </button>
+                        )}
 
                         <button
-                          onClick={() => handleFollowup(appointment.patient.id)}
-                          className="group relative p-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                          onClick={() => handleFollowup(appointment.id, appointment.patient.id)}
+                          className="group relative p-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors disabled:opacity-60"
                           title="Follow-up"
+                          disabled={followupLoadingId === appointment.id}
                         >
                           <FaPrescriptionBottleAlt className="w-5 h-5" />
                           <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                             Follow-up
-                          </span>
-                        </button>
-
-                        <button
-                          onClick={() => handleCancel(appointment.id)}
-                          className="group relative p-3 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
-                          title="Cancel"
-                        >
-                          <FaTimes className="w-5 h-5" />
-                          <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                            Cancel
                           </span>
                         </button>
                       </div>

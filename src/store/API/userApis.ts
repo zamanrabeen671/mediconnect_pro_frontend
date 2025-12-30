@@ -23,16 +23,19 @@ export const login = createAsyncThunk("login", async (data: any, thunkAPI) => {
   }
 });
 
-export const getUser = createAsyncThunk("user/getUser", async (_, thunkAPI) => {
-  const api = useAxios();
-  try {
-    const { data } = await api.get(`${API_URL}/users/me`);
-    thunkAPI.dispatch(setUser(data.user));
-    return data;
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message);
+export const getUser = createAsyncThunk(
+  "user/getUser",
+  async (_,thunkAPI ) => {
+    const api = useAxios();
+    try {
+      const { data } = await api.get(`${API_URL}/users/me`);
+      thunkAPI.dispatch(setUser(data.user));
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
   }
-});
+);
 
 export const getUserList = createAsyncThunk(
   "user/getUserList",
@@ -82,7 +85,10 @@ export const userUpdate = createAsyncThunk(
     const { router, postData } = data;
     try {
       const api = useAxios();
-      const response = await api.put(`${API_URL}/users/update`, postData);
+      const response = await api.put(
+        `${API_URL}/users/update`,
+        postData
+      );
       router(`/user/list`);
       return response.data;
     } catch (err: any) {
