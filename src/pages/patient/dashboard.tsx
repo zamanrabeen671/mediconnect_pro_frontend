@@ -1,9 +1,17 @@
-import { useAppSelector } from "../../store/hooks"
+import { useEffect } from "react"
+import { useAppDispatch, useAppSelector } from "../../store/hooks"
 import { FaCalendarPlus, FaUserMd, FaHistory, FaPrescription } from "react-icons/fa"
+import { getPatientStatistic } from "../../store/API/patientApi";
 
 export default function PatientDashboard() {
+  const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth)
+  const { patientStatistics } = useAppSelector((state) => state.patient)
 
+  useEffect(() => {
+    // You can fetch additional data here if needed
+    dispatch(getPatientStatistic());
+  }, [dispatch])
 
   return (
     <div className="min-h-screen bg-background">
@@ -24,7 +32,7 @@ export default function PatientDashboard() {
               </div>
               <span className="text-sm text-muted-foreground">Upcoming</span>
             </div>
-            <div className="text-3xl font-bold text-foreground mb-1">2</div>
+            <div className="text-3xl font-bold text-foreground mb-1">{patientStatistics?.upcoming_appointments}</div>
             <div className="text-sm text-muted-foreground">Appointments</div>
           </div>
 
@@ -35,7 +43,7 @@ export default function PatientDashboard() {
               </div>
               <span className="text-sm text-muted-foreground">Visited</span>
             </div>
-            <div className="text-3xl font-bold text-foreground mb-1">5</div>
+            <div className="text-3xl font-bold text-foreground mb-1">{patientStatistics?.visited_doctors}</div>
             <div className="text-sm text-muted-foreground">Doctors</div>
           </div>
 
@@ -46,7 +54,7 @@ export default function PatientDashboard() {
               </div>
               <span className="text-sm text-muted-foreground">Active</span>
             </div>
-            <div className="text-3xl font-bold text-foreground mb-1">3</div>
+            <div className="text-3xl font-bold text-foreground mb-1">{patientStatistics?.active_prescriptions}</div>
             <div className="text-sm text-muted-foreground">Prescriptions</div>
           </div>
         </div>

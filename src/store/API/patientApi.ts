@@ -67,3 +67,16 @@ export const getPatientPrescriptions = createAsyncThunk(
     }
   }
 );
+
+export const getPatientStatistic = createAsyncThunk(
+  "patient/getPatientStatistic",
+  async (_, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data }: any = await api.get(`${API_URL}/patients/me/dashboard`);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);

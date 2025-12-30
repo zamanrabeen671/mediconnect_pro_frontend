@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
-import { getBloodGroupList, getPatientAppointment, getPatientDetails, getPatientPrescriptions } from "../API/patientApi"
+import { getBloodGroupList, getPatientAppointment, getPatientDetails, getPatientPrescriptions, getPatientStatistic } from "../API/patientApi"
 
 export interface BloodGroupOut {
   id: number
@@ -41,13 +41,20 @@ export interface Prescriptionsmedicine {
 export interface PatientPrescriptions {
   medicines: []
 }
+interface PatientStatistics {
+  upcoming_appointments: number
+  visited_doctors: number
+  active_prescriptions: number
+}
+
 interface PatientState {
   appointments: any[]
   doctors: any[]
   bloodGroups: any[],
   patientDetails: patientDetails | null
   patientAppointments: AppointmentOut[]
-  patientPrescriptions?: PatientPrescriptions[]
+  patientPrescriptions?: PatientPrescriptions[],
+  patientStatistics: PatientStatistics | null,
   loading: boolean
 }
 
@@ -58,6 +65,7 @@ const initialState: PatientState = {
   bloodGroups: [],
   patientAppointments: [],
   patientPrescriptions: [],
+  patientStatistics: null,
   patientDetails: null,
   loading: false,
 }
@@ -89,6 +97,10 @@ const patientSlice = createSlice({
     builder.addCase(getPatientPrescriptions.fulfilled, (state, action) => {
       state.loading = false;
       state.patientPrescriptions = action.payload;
+    });
+    builder.addCase(getPatientStatistic.fulfilled, (state, action) => {
+      state.loading = false;
+      state.patientStatistics = action.payload;
     });
   },
 

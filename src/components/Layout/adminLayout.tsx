@@ -5,8 +5,8 @@ import AdminDoctors from "../../pages/admin/doctors"
 import AdminPatients from "../../pages/admin/patients"
 import AdminSettings from "../../pages/admin/settings"
 import { CreateMedicine } from "../common/createmedicine"
-import { PatientDetails } from "../patient/patientDetails"
 import AdminAnalytics from "../../pages/admin/analytics"
+import { PatientDetails } from "../Patient/patientDetails"
 
 export default function AdminLayout() {
   return (
