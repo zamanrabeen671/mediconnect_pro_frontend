@@ -1,5 +1,19 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { deleteMedicine, getMedicineById, getMedicineList, getPatientList, searchMedicineByName, updateMedicine } from "../API/adminApi";
+import {
+  deleteMedicine,
+  getMedicineById,
+  getMedicineList,
+  getPatientList,
+  searchMedicineByName,
+  updateMedicine,
+  getDashboardCounts,
+  getPendingDoctors,
+  getTopMedicines,
+  getTopDoctors,
+  getAppointmentsOverview,
+  getPopularSpecializations,
+  updateDoctorStatus,
+} from "../API/adminApi";
 
 interface AdminState {
   pendingDoctors: any[];
@@ -7,6 +21,9 @@ interface AdminState {
   patients: any[];
   medicines: any[];
   selectedMedicine: any | null;
+  topMedicineList: any[];
+  appointmentOverview: { date: string; count: number }[];
+  popularSpecializations: { specialization: string; count: number }[];
   stats: {
     totalDoctors: number;
     totalPatients: number;
@@ -22,6 +39,9 @@ const initialState: AdminState = {
    medicines: [],
   selectedMedicine: null,
   patients: [],
+  topMedicineList: [],
+  appointmentOverview: [],
+  popularSpecializations: [],
   stats: {
     totalDoctors: 0,
     totalPatients: 0,
@@ -62,6 +82,39 @@ const adminSlice = createSlice({
       state.loading = false;
       state.patients = action.payload;
     });
+    builder.addCase(getDashboardCounts.fulfilled, (state, action) => {
+      state.loading = false;
+      const payload = action.payload || {};
+      state.stats.totalDoctors = payload.total_doctors ?? state.stats.totalDoctors;
+      state.stats.totalPatients = payload.total_patients ?? state.stats.totalPatients;
+      state.stats.pendingApprovals = payload.pending_doctors ?? state.stats.pendingApprovals;
+      state.stats.totalAppointments = payload.total_appointments ?? state.stats.totalAppointments;
+    });
+    builder.addCase(getPendingDoctors.fulfilled, (state, action) => {
+      state.loading = false;
+      state.pendingDoctors = action.payload;
+      state.stats.pendingApprovals = action.payload.length;
+    });
+    builder.addCase(getAppointmentsOverview.fulfilled, (state, action) => {
+      state.loading = false;
+      state.appointmentOverview = action.payload || [];
+    });
+    builder.addCase(getPopularSpecializations.fulfilled, (state, action) => {
+      state.loading = false;
+      state.popularSpecializations = action.payload || [];
+    });
+    builder.addCase(getTopDoctors.fulfilled, (state, action) => {
+      state.loading = false;
+      // store top doctors in approvedDoctors temporarily
+      state.approvedDoctors = action.payload || [];
+    });
+    builder.addCase(updateDoctorStatus.fulfilled, (state, action) => {
+      state.loading = false;
+      const updated: any = action.payload;
+      // remove from pending if status changed
+      state.pendingDoctors = state.pendingDoctors.filter((d) => d.id !== updated.id);
+      state.stats.pendingApprovals = state.pendingDoctors.length;
+    });
      builder.addCase(getMedicineList.fulfilled, (state, action) => {
       state.loading = false;
       state.medicines = action.payload;
@@ -74,6 +127,7 @@ const adminSlice = createSlice({
       state.loading = false;
       state.selectedMedicine = action.payload;
     });
+    
     builder.addCase(deleteMedicine.fulfilled, (state, action) => {
       state.loading = false;
       state.medicines = state.medicines.filter((medicine: any) => medicine.id !== action.payload);
@@ -84,6 +138,10 @@ const adminSlice = createSlice({
       if (index !== -1) {
         state.medicines[index] = action.payload;
       }
+    });
+    builder.addCase(getTopMedicines.fulfilled, (state, action) => {
+      state.loading = false;
+      state.topMedicineList = action.payload;
     });
   },
 });

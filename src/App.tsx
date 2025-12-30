@@ -64,7 +64,6 @@ function App() {
           path="/doctor/*"
           element={isAuthenticated && user?.role === "doctor" ? <DoctorLayout /> : <Navigate to="/sign-in" />}
         />
-
         <Route
           path="/doctor/complete-profile"
           element={

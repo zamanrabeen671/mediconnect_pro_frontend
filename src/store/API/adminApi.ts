@@ -139,3 +139,111 @@ export const getGeneralizedReport = createAsyncThunk(
     }
   }
 );
+
+/**
+ * Admin dashboard counts
+ */
+export const getDashboardCounts = createAsyncThunk(
+  "admin/get-dashboard-counts",
+  async (_, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.get(`${API_URL}/admin/dashboard`);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/** Pending doctors list */
+export const getPendingDoctors = createAsyncThunk(
+  "admin/get-pending-doctors",
+  async (_, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.get(`${API_URL}/admin/pending-doctors`);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/** Top medicines for analytics */
+export const getTopMedicines = createAsyncThunk(
+  "admin/get-top-medicines",
+  async (limit:number = 10, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.get(`${API_URL}/admin/analytics/medicines`, {
+        params: { limit },
+      });
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/** Top doctors by completed appointments */
+export const getTopDoctors = createAsyncThunk(
+  "admin/get-top-doctors",
+  async (limit:number = 5, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.get(`${API_URL}/admin/analytics/top-doctors`, {
+        params: { limit },
+      });
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/** Approve / reject doctor via existing doctors PUT endpoint */
+export const updateDoctorStatus = createAsyncThunk(
+  "admin/update-doctor-status",
+  async ({ doctorId, status }: { doctorId: number; status: string }, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.put(`${API_URL}/doctors/${doctorId}`, { status });
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/** Appointments overview for last N days */
+export const getAppointmentsOverview = createAsyncThunk(
+  "admin/get-appointments-overview",
+  async (days:number = 7, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.get(`${API_URL}/admin/analytics/appointments-overview`, {
+        params: { days },
+      });
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/** Popular specializations */
+export const getPopularSpecializations = createAsyncThunk(
+  "admin/get-popular-specializations",
+  async (limit:number = 10, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.get(`${API_URL}/admin/analytics/specializations`, {
+        params: { limit },
+      });
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);

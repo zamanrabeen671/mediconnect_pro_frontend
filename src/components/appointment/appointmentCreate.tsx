@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { createAppointmentWithPatient } from "../../store/API/doctorApi";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { getBloodGroupList } from "../../store/API/patientApi";
-import { FaCalendarAlt, FaUser, FaPhone, FaMapMarkerAlt, FaTint, FaClock } from "react-icons/fa";
+import { FaCalendarAlt, FaUser, FaPhone, FaMapMarkerAlt, FaTint, FaClock, FaMailBulk, FaMailchimp } from "react-icons/fa";
 
 const CreateAppointment: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -21,6 +21,7 @@ const CreateAppointment: React.FC = () => {
         age: "",
         gender: "",
         phone: "",
+        email: "",
         blood_group_id: "",
         address: "",
     });
@@ -46,12 +47,13 @@ const CreateAppointment: React.FC = () => {
                 age: parseInt(patient.age),
                 gender: patient.gender,
                 phone: patient.phone,
+                email: patient.email,
                 blood_group_id: patient.blood_group_id ? parseInt(patient.blood_group_id) : null,
                 address: patient.address,
             },
             doctor_id: user?.id as any,
             appointment_date: appointment.appointment_date,
-            appointment_time: appointment.appointment_time,
+            appointment_time:  appointment.appointment_time,
         };
 
         dispatch(createAppointmentWithPatient({ postData, router: navigate }));
@@ -171,8 +173,23 @@ const CreateAppointment: React.FC = () => {
                                 </select>
                             </div>
 
-                            {/* Address */}
                             <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <FaMailchimp size={16} className="text-gray-500" />
+                                        Email
+                                    </div>
+                                </label>
+                                <input
+                                    type="email"
+                                    placeholder="Enter email"
+                                    name="email"
+                                    value={patient.email}
+                                    onChange={handlePatientChange}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                />
+                            </div>
+                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     <div className="flex items-center gap-2">
                                         <FaMapMarkerAlt size={16} className="text-gray-500" />

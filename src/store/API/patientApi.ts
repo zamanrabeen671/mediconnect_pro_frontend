@@ -93,19 +93,6 @@ export const createAppointmentByPatient = createAsyncThunk(
   }
 );
 
-export const getPatientPrescriptions = createAsyncThunk(
-  "patient/getPatientPrescriptions",
-  async (patientId: number, { rejectWithValue }) => {
-    try {
-      const api = useAxios();
-      const { data }: any = await api.get(`${BASE_URL}/prescriptions/patient/${patientId}/`);
-      return data;
-    } catch (err: any) {
-      return rejectWithValue(err.message || "Unable to load prescriptions.");
-    }
-  }
-);
-
 export const getAppointmentPrescriptions = createAsyncThunk(
   "patient/getAppointmentPrescriptions",
   async (appointmentId: number, { rejectWithValue }) => {
@@ -133,4 +120,54 @@ export const createBloodGroup = createAsyncThunk(
       return thunkAPI.rejectWithValue(err.message);
     }
   }
-)
+);
+
+export const getPatientDetails = createAsyncThunk(
+  "patient/getPatientDetails",
+  async (patientId: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data }: any = await api.get(`${API_URL}/patients/${patientId}`);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+export const getPatientAppointment = createAsyncThunk(
+  "patient/getPatientAppointment",
+  async (patientId: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data }: any = await api.get(`${API_URL}/appointments/patient/${patientId}`);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+export const getPatientPrescriptions = createAsyncThunk(
+  "patient/getPatientPrescriptions",
+  async (patientId: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data }: any = await api.get(`${API_URL}/prescriptions/patient/${patientId}`);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const getPatientStatistic = createAsyncThunk(
+  "patient/getPatientStatistic",
+  async (_, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data }: any = await api.get(`${API_URL}/patients/me/dashboard`);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
