@@ -4,7 +4,8 @@ import { getUser } from "../API/userApis"
 export interface User {
   id: number
   email: string
-  name: string
+  name?: string
+  full_name?: string
   role: "admin" | "doctor" | "patient"
   status?: string
   phone?: string

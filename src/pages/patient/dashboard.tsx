@@ -3,7 +3,7 @@ import { FaArrowRight, FaCalendarAlt, FaCalendarCheck, FaCalendarPlus, FaClock, 
 import { useNavigate } from "react-router"
 
 import { getDoctorList } from "../../store/API/doctorApi"
-import { getAppointmentPrescriptions, getPatientAppointments, getPatientPrescriptions } from "../../store/API/patientApi"
+import { getAppointmentPrescriptions, getPatientAppointments, getPatientDetails, getPatientPrescriptions, getPatientStatistic } from "../../store/API/patientApi"
 import { useAppDispatch, useAppSelector } from "../../store/hooks"
 
 export default function PatientDashboard() {
@@ -11,14 +11,15 @@ export default function PatientDashboard() {
   const navigate = useNavigate()
   const { user } = useAppSelector((state) => state.auth)
   const { doctorList } = useAppSelector((state) => state.doctor)
-  const { prescriptions, appointments } = useAppSelector((state) => state.patient)
+  const { prescriptions, appointments, patientDetails } = useAppSelector((state) => state.patient)
   const [appointmentId, setAppointmentId] = useState("")
-
+  
   useEffect(() => {
     dispatch(getDoctorList({}))
     if (user?.id) {
       dispatch(getPatientPrescriptions(user.id))
       dispatch(getPatientAppointments(user.id))
+      dispatch(getPatientDetails(user.id))
     }
   }, [dispatch, user?.id])
 
@@ -52,7 +53,7 @@ export default function PatientDashboard() {
       <div className="container mx-auto px-4 py-8 space-y-8">
         <div className="flex flex-col gap-2">
           <p className="text-sm text-muted-foreground">Welcome back</p>
-          <h1 className="text-3xl font-bold text-foreground">{user?.name || "Patient"}</h1>
+          <h1 className="text-3xl font-bold text-foreground">{patientDetails?.full_name || "Patient"}</h1>
           <p className="text-muted-foreground">Book appointments, find doctors, and view prescriptions.</p>
         </div>
 
@@ -214,8 +215,9 @@ export default function PatientDashboard() {
                     <FaUserMd />
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">{doc.name}</p>
+                    <p className="font-semibold text-foreground">{doc.full_name}</p>
                     <p className="text-xs text-muted-foreground">{doc.specialization || "General"}</p>
+                    <p className="text-xs text-muted-foreground">{doc.qualifications || "General"}</p>
                   </div>
                 </div>
                 <div className="mt-3 flex justify-between text-sm text-muted-foreground">

@@ -1,7 +1,8 @@
 import { Navigate, Route, Routes } from "react-router"
 import PatientDashboard from "../../pages/patient/dashboard"
-import { DoctorsList } from "../../pages/patient/doctorsList"
-import { Appointments } from "../../pages/patient/appointments"
+import PatientAppointmentBook from "../../pages/patient/appointment-book"
+import PatientDoctors from "../../pages/patient/doctors"
+import PatientAppointments from "../../pages/patient/appointments"
 
 export const PatientLayout = () => {
   return (
@@ -12,9 +13,9 @@ export const PatientLayout = () => {
         <Routes>
           <Route index element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<PatientDashboard />} />
-          <Route path="doctors" element={<DoctorsList />} />
-          <Route path="appointments" element={<Appointments />} />
-         
+          <Route path="doctors" element={<PatientDoctors />} />
+          <Route path="book" element={<PatientAppointmentBook />} />
+          <Route path="appointments" element={<PatientAppointments />} />
         </Routes>
       </div>
     </div>

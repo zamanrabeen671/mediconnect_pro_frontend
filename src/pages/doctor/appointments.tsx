@@ -14,7 +14,7 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useEffect, useState } from "react";
 import { doctorUpdateAppointmentStatus, getDoctorAppointmentList } from "../../store/API/doctorApi";
 import useAxios from "../../utils/useAxios";
-import { BASE_URL } from "../../settings/config";
+import { API_URL, BASE_URL } from "../../settings/config";
 
 export default function DoctorAppointments() {
   const navigate = useNavigate();
@@ -45,19 +45,19 @@ export default function DoctorAppointments() {
   const handleFollowup = async (appointmentId: number, patientId: number) => {
     setFollowupLoadingId(appointmentId);
     try {
-      const res = await api.get(`${BASE_URL}/prescriptions/appointment/${appointmentId}/`);
-      const data = Array.isArray(res.data) ? res.data[0] : res.data;
+      // const res = await api.get(`${API_URL}/prescriptions/appointment/${appointmentId}/`);
+      // const data = Array.isArray(res.data) ? res.data[0] : res.data;
 
-      if (data?.id) {
+      // if (data?.id) {
         navigate(`/doctor/patient/${patientId}/prescription`, {
           state: {
             appointmentId,
             patientId,
-            prescriptionId: data.id,
+            // prescriptionId: data.id,
           },
         });
         return;
-      }
+      // }
     } catch (err: any) {
       if (err?.response?.status !== 404) {
         console.error("Failed to check prescription", err);

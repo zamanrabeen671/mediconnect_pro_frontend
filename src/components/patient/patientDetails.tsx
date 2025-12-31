@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router"
 import { FaPhone, FaMapMarkerAlt } from "react-icons/fa"
 import { useAppDispatch, useAppSelector } from "../../store/hooks"
-import { getPatientDetails } from "../../store/API/patientApi"
+import { getPatientAppointment, getPatientDetails, getPatientPrescriptions } from "../../store/API/patientApi"
 
 export const PatientDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -18,6 +18,8 @@ export const PatientDetails: React.FC = () => {
   useEffect(() => {
     if (!id) return
     dispatch(getPatientDetails(Number(id)))
+    dispatch(getPatientAppointment(Number(id)))
+    dispatch(getPatientPrescriptions(Number(id)))
   }, [id, dispatch])
 
   const initials = (name?: string) => {

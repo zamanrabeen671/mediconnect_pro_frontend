@@ -16,6 +16,7 @@ import PatientAppointmentBook from "./pages/patient/appointment-book";
 import PatientDoctors from "./pages/patient/doctors";
 import PatientAppointments from "./pages/patient/appointments";
 import { PendingDoctor } from "./components/common/pendingdoctor";
+import { PatientLayout } from "./components/Layout/patientLayout";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -77,21 +78,10 @@ function App() {
 
         {/* Patient routes */}
         <Route
-          path="/patient"
-          element={isAuthenticated && user?.role === "patient" ? <PatientDashboard /> : <Navigate to="/sign-in" />}
+          path="/patient/*"
+          element={isAuthenticated && user?.role === "patient" ? <PatientLayout /> : <Navigate to="/sign-in" />}
         />
-        <Route
-          path="/patient/book"
-          element={isAuthenticated && user?.role === "patient" ? <PatientAppointmentBook /> : <Navigate to="/sign-in" />}
-        />
-        <Route
-          path="/patient/doctors"
-          element={isAuthenticated && user?.role === "patient" ? <PatientDoctors /> : <Navigate to="/sign-in" />}
-        />
-        <Route
-          path="/patient/appointments"
-          element={isAuthenticated && user?.role === "patient" ? <PatientAppointments /> : <Navigate to="/sign-in" />}
-        />
+        
 
         {/* Admin routes */}
         <Route
