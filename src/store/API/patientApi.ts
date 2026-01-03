@@ -140,6 +140,7 @@ export const getPatientAppointment = createAsyncThunk(
     try {
       const api = useAxios();
       const { data }: any = await api.get(`${API_URL}/appointments/patient/${patientId}`);
+      console.log(data)
       return data;
     } catch (err: any) {
       return rejectWithValue(err.message);

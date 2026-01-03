@@ -222,7 +222,7 @@ export const createPrescription = createAsyncThunk(
   }, thunkAPI) => {
     try {
       const api = useAxios();
-      const response = await api.post(`${BASE_URL}/prescriptions/`, postData);
+      const response = await api.post(`${API_URL}/prescriptions/`, postData);
       return response.data;
     } catch (err: any) {
       const errorMessage = err?.response?.data?.detail || err?.response?.data?.message || err?.message || "Failed to create prescription";

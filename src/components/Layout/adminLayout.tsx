@@ -6,7 +6,7 @@ import AdminPatients from "../../pages/admin/patients"
 import AdminSettings from "../../pages/admin/settings"
 import { CreateMedicine } from "../common/createmedicine"
 import AdminAnalytics from "../../pages/admin/analytics"
-import { PatientDetails } from "../Patient/patientDetails"
+import { PatientSummery } from "../Patient/patientDetails"
 
 export default function AdminLayout() {
   return (
@@ -22,7 +22,7 @@ export default function AdminLayout() {
           <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="create-medicine" element={<CreateMedicine />} />
-          <Route path="patient/:id/details" element={<PatientDetails />} />
+          <Route path="patient/:patientId/details" element={<PatientSummery />} />
         </Routes>
       </div>
     </div>

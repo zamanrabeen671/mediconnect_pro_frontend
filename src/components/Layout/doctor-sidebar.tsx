@@ -1,13 +1,13 @@
-import { FaHome, FaCalendarAlt, FaUserInjured, FaFileAlt, FaCog, FaClock } from "react-icons/fa"
+import { FaHome, FaCalendarAlt, FaUserInjured, FaCog, FaClock } from "react-icons/fa"
 import { NavLink } from "react-router"
 
 export default function DoctorSidebar() {
   const navItems = [
     { icon: FaHome, label: "Dashboard", path: "/doctor/dashboard" },
     { icon: FaCalendarAlt, label: "Appointments", path: "/doctor/appointments" },
-    { icon: FaClock, label: "Schedule", path: "/doctor/schedule" },
     { icon: FaUserInjured, label: "Patients", path: "/doctor/patients" },
-    { icon: FaFileAlt, label: "Prescriptions", path: "/doctor/prescriptions" },
+    { icon: FaClock, label: "Schedule", path: "/doctor/schedule" },
+    
     { icon: FaCog, label: "Settings", path: "/doctor/settings" },
   ]
 

@@ -11,10 +11,7 @@ import LandingPage from "./pages/landing";
 import SignIn from "./pages/auth/sign-in";
 import SignUp from "./pages/auth/sign-up";
 import DoctorProfileCompletion from "./pages/doctor/profile-completion";
-import PatientDashboard from "./pages/patient/dashboard";
-import PatientAppointmentBook from "./pages/patient/appointment-book";
-import PatientDoctors from "./pages/patient/doctors";
-import PatientAppointments from "./pages/patient/appointments";
+
 import { PendingDoctor } from "./components/common/pendingdoctor";
 import { PatientLayout } from "./components/Layout/patientLayout";
 

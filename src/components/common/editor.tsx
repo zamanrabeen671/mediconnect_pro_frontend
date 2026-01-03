@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BiSearch, BiPlus, BiTrash } from "react-icons/bi";
-import { Popover, Transition, Combobox } from "@headlessui/react";
+import { Popover, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { getPatientDetails } from "../../store/API/patientApi";
 import { getMedicineList } from "../../store/API/adminApi";
 
 // Types based on your backend models
@@ -30,53 +29,21 @@ interface PrescriptionCreate {
   medicines: PrescriptionMedicineCreate[];
 }
 
-// Suggestion data
-const DOSAGE_SUGGESTIONS = [
-  "1 tablet",
-  "2 tablets",
-  "1 capsule",
-  "2 capsules",
-  "5ml",
-  "10ml",
-  "1 teaspoon",
-  "2 teaspoons",
-  "1 tablespoon",
-  "As directed",
-];
 
-const DURATION_SUGGESTIONS = [
-  "3 days",
-  "5 days",
-  "7 days",
-  "10 days",
-  "14 days",
-  "21 days",
-  "30 days",
-  "Until finished",
-  "As needed",
-];
+const DOSAGE_AMOUNT_OPTIONS = ["0", "1", "1.5", "2", "2.5", "3"];
 
-const INSTRUCTION_SUGGESTIONS = [
-  "After meal",
-  "Before meal",
-  "With meal",
-  "On empty stomach",
-  "At bedtime",
-  "Morning only",
-  "Twice daily",
-  "Three times daily",
-  "Every 6 hours",
-  "Every 8 hours",
-  "As needed for pain",
-];
+interface EditorProps {
+  appointmentId?: number | string;
+  patientId?: number | string;
+  onCreate?: (payload: Partial<PrescriptionCreate>) => Promise<any>;
+}
 
-export const Editor = () => {
+export const Editor = ({ appointmentId, patientId, onCreate }: EditorProps) => {
   const [prescribedMedicines, setPrescribedMedicines] = useState<
     PrescriptionMedicineCreate[]
   >([]);
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((s) => s.auth);
-  const { patientDetails } = useAppSelector((state) => state.patient);
+ 
   const { medicines } = useAppSelector((state) => state.admin);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -133,6 +100,8 @@ export const Editor = () => {
 
   const handleSubmit = (): void => {
     const prescriptionData: Partial<PrescriptionCreate> = {
+      appointment_id: appointmentId ? Number(appointmentId) : undefined,
+      patient_id: patientId ? Number(patientId) : undefined,
       notes: notes,
       medicines: prescribedMedicines.map((pm) => ({
         medicine_id: pm.medicine_id,
@@ -141,98 +110,177 @@ export const Editor = () => {
         instruction: pm.instruction,
       })),
     };
-    console.log("Prescription Data:", prescriptionData);
-    // Submit to your API here
+
+    if (onCreate) {
+      onCreate(prescriptionData)
+        .then(() => {
+          setPrescribedMedicines([]);
+          setNotes("");
+        })
+        .catch((err) => {
+          console.error("Failed to create prescription from Editor:", err);
+        });
+    } else {
+      console.log("Prescription Data:", prescriptionData);
+    }
   };
 
   // Suggestion Input Component
-  const SuggestionInput = ({
+  
+
+  // Popover select component for fixed option lists (shows on input focus/click)
+  const PopoverSelect = ({
     value,
     onChange,
-    suggestions,
+    options,
     placeholder,
     label,
   }: {
     value: string;
     onChange: (value: string) => void;
-    suggestions: string[];
+    options: string[];
     placeholder: string;
     label: string;
   }) => {
-    const [query, setQuery] = useState(value);
-
-    const filteredSuggestions =
-      query === ""
-        ? suggestions
-        : suggestions.filter((suggestion) =>
-            suggestion.toLowerCase().includes(query.toLowerCase())
-          );
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
-      setQuery(value);
-    }, [value]);
+      const handleClickOutside = (e: MouseEvent) => {
+        if (ref.current && !ref.current.contains(e.target as Node)) {
+          setOpen(false);
+        }
+      };
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     return (
-      <div>
+      <div className="relative" ref={ref}>
         <label className="block text-xs font-medium text-gray-700 mb-1">
           {label}
         </label>
-        <Combobox
+        <input
+          type="text"
           value={value}
-          onChange={(val) => {
-            onChange(val || "");
-            setQuery(val || "");
-          }}
-        >
-          <div className="relative">
-            <Combobox.Input
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder={placeholder}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                onChange(e.target.value);
-              }}
-              displayValue={(val: string) => val}
-            />
-            <Transition
-              as={Fragment}
-              leave="transition ease-in duration-100"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-              afterLeave={() => setQuery(value)}
-            >
-              <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                {filteredSuggestions.length === 0 && query !== "" ? (
-                  <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
-                    No suggestions found. Press Enter to use "{query}"
-                  </div>
-                ) : (
-                  filteredSuggestions.map((suggestion) => (
-                    <Combobox.Option
-                      key={suggestion}
-                      className={({ active }) =>
-                        `relative cursor-pointer select-none py-2 px-4 ${
-                          active ? "bg-blue-50 text-blue-900" : "text-gray-900"
-                        }`
-                      }
-                      value={suggestion}
-                    >
-                      {({ selected, active }) => (
-                        <span
-                          className={`block truncate ${
-                            selected ? "font-semibold" : "font-normal"
-                          }`}
-                        >
-                          {suggestion}
-                        </span>
-                      )}
-                    </Combobox.Option>
-                  ))
-                )}
-              </Combobox.Options>
-            </Transition>
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setOpen(true)}
+          onClick={() => setOpen(true)}
+          placeholder={placeholder}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        {open && (
+          <div className="absolute z-10 mt-1 w-full rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5">
+            {options.map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => {
+                  onChange(opt);
+                  setOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 hover:bg-blue-50 text-gray-900"
+              >
+                {opt}
+              </button>
+            ))}
           </div>
-        </Combobox>
+        )}
+      </div>
+    );
+  };
+
+  // DosageButtons: three buttons for Morning/Noon/Night each with a popover of amounts
+  const DosageButtons = ({
+    value,
+    onChange,
+    label,
+  }: {
+    value: string;
+    onChange: (value: string) => void;
+    label: string;
+  }) => {
+    const parse = (v: string) => {
+      const parts = v ? v.split("/") : [];
+      return {
+        m: parts[0] || "0",
+        n: parts[1] || "0",
+        e: parts[2] || "0",
+      };
+    };
+
+    const [vals, setVals] = useState<{ m: string; n: string; e: string }>(
+      parse(value)
+    );
+    const [openIndex, setOpenIndex] = useState<number | null>(null);
+    const ref = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+      setVals(parse(value));
+    }, [value]);
+
+    useEffect(() => {
+      const handleClickOutside = (e: MouseEvent) => {
+        if (ref.current && !ref.current.contains(e.target as Node)) {
+          setOpenIndex(null);
+        }
+      };
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const apply = (newVals: { m: string; n: string; e: string }) => {
+      setVals(newVals);
+      onChange(`${newVals.m}/${newVals.n}/${newVals.e}`);
+    };
+
+    const buttons = [
+      { key: "m", label: "" },
+      { key: "n", label: "" },
+      { key: "e", label: "" },
+    ];
+
+    return (
+      <div ref={ref}>
+        <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
+        <div className="flex gap-2">
+          {buttons.map((b, idx) => (
+            <div key={b.key} className="relative">
+              <button
+                type="button"
+                onClick={() => setOpenIndex(idx === openIndex ? null : idx)}
+                className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-sm w-28 text-left"
+              >
+                <div className="text-xs text-gray-500">{b.label}</div>
+                <div className="font-medium text-gray-900">
+                  {b.key === "m" ? vals.m : b.key === "n" ? vals.n : vals.e}
+                </div>
+              </button>
+
+              {openIndex === idx && (
+                <div className="absolute z-20 mt-1 w-36 rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5">
+                  {DOSAGE_AMOUNT_OPTIONS.map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => {
+                        const next = { ...vals };
+                        if (b.key === "m") next.m = opt;
+                        if (b.key === "n") next.n = opt;
+                        if (b.key === "e") next.e = opt;
+                        apply(next);
+                        setOpenIndex(null);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-blue-50 text-gray-900"
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     );
   };
@@ -244,7 +292,7 @@ export const Editor = () => {
         <div className="flex items-center gap-3 mb-4">
           <div className="text-xl font-bold text-blue-600">
             <Popover className="relative">
-              {({ open }) => (
+              {() => (
                 <>
                   <Popover.Button className="inline-flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
                     Rx,
@@ -362,45 +410,31 @@ export const Editor = () => {
 
                       {/* Input Fields with Suggestions */}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <SuggestionInput
+                        <DosageButtons
                           value={pm.dosage}
                           onChange={(value) =>
-                            handleUpdateMedicine(
-                              pm.medicine_id,
-                              "dosage",
-                              value
-                            )
+                            handleUpdateMedicine(pm.medicine_id, "dosage", value)
                           }
-                          suggestions={DOSAGE_SUGGESTIONS}
-                          placeholder="e.g., 1 tablet"
                           label="Dosage"
                         />
 
-                        <SuggestionInput
+                        <PopoverSelect
                           value={pm.duration}
                           onChange={(value) =>
-                            handleUpdateMedicine(
-                              pm.medicine_id,
-                              "duration",
-                              value
-                            )
+                            handleUpdateMedicine(pm.medicine_id, "duration", value)
                           }
-                          suggestions={DURATION_SUGGESTIONS}
-                          placeholder="e.g., 7 days"
+                          options={["1", "2", "3", "7", "10", "30", "continue"]}
+                          placeholder="Select duration"
                           label="Duration"
                         />
 
-                        <SuggestionInput
+                        <PopoverSelect
                           value={pm.instruction}
                           onChange={(value) =>
-                            handleUpdateMedicine(
-                              pm.medicine_id,
-                              "instruction",
-                              value
-                            )
+                            handleUpdateMedicine(pm.medicine_id, "instruction", value)
                           }
-                          suggestions={INSTRUCTION_SUGGESTIONS}
-                          placeholder="e.g., After meal"
+                          options={["after meal", "before meal"]}
+                          placeholder="Select instruction"
                           label="Instruction"
                         />
                       </div>

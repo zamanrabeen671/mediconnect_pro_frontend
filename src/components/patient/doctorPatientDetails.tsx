@@ -1,12 +1,12 @@
 
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router"
 import { FaPhone, FaMapMarkerAlt } from "react-icons/fa"
 import { useAppDispatch, useAppSelector } from "../../store/hooks"
 import { getPatientAppointment, getPatientDetails } from "../../store/API/patientApi"
 import { ViewPrescription } from "../common/view"
 
-export const PatientSummery = () => {
+export const DcotorPatientDetails: React.FC = () => {
   const {patientId}  = useParams<{ patientId: string }>()
 
   console.log(patientId)
