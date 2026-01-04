@@ -3,6 +3,7 @@ import PatientDashboard from "../../pages/patient/dashboard"
 import PatientAppointmentBook from "../../pages/patient/appointment-book"
 import PatientDoctors from "../../pages/patient/doctors"
 import PatientAppointments from "../../pages/patient/appointments"
+import { PatientPrescription } from "../../pages/patient/patientPrescription"
 
 export const PatientLayout = () => {
   return (
@@ -16,6 +17,7 @@ export const PatientLayout = () => {
           <Route path="doctors" element={<PatientDoctors />} />
           <Route path="book" element={<PatientAppointmentBook />} />
           <Route path="appointments" element={<PatientAppointments />} />
+          <Route path="details/:patientId/prescription" element={<PatientPrescription />} />
         </Routes>
       </div>
     </div>

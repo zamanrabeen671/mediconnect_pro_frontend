@@ -281,3 +281,28 @@ export const addMedicineToPrescription = createAsyncThunk(
 //     }
 //   }
 // );
+
+export const getDoctorStates = createAsyncThunk(
+  "user/doctorStates",
+  async (id: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data }: any = await api.get(`${API_URL}/doctors/${id}/dashboard/stats`);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+export const getDoctorAppointmentState = createAsyncThunk(
+  "user/doctorAppointmentState",
+  async (id: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data }: any = await api.get(`${API_URL}/doctors/${id}/appointments/today`);
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
