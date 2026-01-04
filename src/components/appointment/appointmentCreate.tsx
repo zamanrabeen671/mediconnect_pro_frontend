@@ -3,7 +3,8 @@ import { useNavigate } from "react-router";
 import { createAppointmentWithPatient } from "../../store/API/doctorApi";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { getBloodGroupList } from "../../store/API/patientApi";
-import { FaCalendarAlt, FaUser, FaPhone, FaMapMarkerAlt, FaTint, FaClock, FaMailBulk, FaMailchimp } from "react-icons/fa";
+import { searchPatients } from "../../store/API/patientApi";
+import { FaCalendarAlt, FaUser, FaPhone, FaMapMarkerAlt, FaTint, FaClock, FaMailchimp } from "react-icons/fa";
 
 const CreateAppointment: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -12,6 +13,9 @@ const CreateAppointment: React.FC = () => {
     const { bloodGroups } = useAppSelector((state) => state.patient);
     const { user } = useAppSelector((state) => state.auth);
 
+    const [isExistingPatient, setIsExistingPatient] = useState(false);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [showForm, setShowForm] = useState(false);
     useEffect(() => {
         dispatch(getBloodGroupList());
     }, []);
@@ -83,129 +87,236 @@ const CreateAppointment: React.FC = () => {
                             <h3 className="text-xl font-semibold text-gray-800">Patient Information</h3>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            {/* Full Name */}
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Full Name <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter patient's full name"
-                                    name="full_name"
-                                    value={patient.full_name}
-                                    onChange={handlePatientChange}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                                />
-                            </div>
-
-                            {/* Age */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Age <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="number"
-                                    placeholder="Age"
-                                    name="age"
-                                    value={patient.age}
-                                    onChange={handlePatientChange}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                                />
-                            </div>
-
-                            {/* Gender */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Gender <span className="text-red-500">*</span>
-                                </label>
-                                <select
-                                    name="gender"
-                                    value={patient.gender}
-                                    onChange={handlePatientChange}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none appearance-none bg-white"
-                                >
-                                    <option value="">Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-
-                            {/* Phone */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <FaPhone size={16} className="text-gray-500" />
-                                        Phone Number <span className="text-red-500">*</span>
+                        { !showForm ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <FaPhone size={16} className="text-gray-500" />
+                                            Search Patient by Phone
+                                        </div>
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Enter phone number"
+                                            name="phone"
+                                            value={patient.phone}
+                                            onChange={handlePatientChange}
+                                            className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                if (!patient.phone) return;
+                                                setSearchLoading(true);
+                                                try {
+                                                    const res: any = await dispatch(searchPatients(patient.phone));
+                                                    if (res?.payload && Array.isArray(res.payload) && res.payload.length > 0) {
+                                                        const p = res.payload[0];
+                                                        setPatient({
+                                                            full_name: p.full_name || "",
+                                                            age: p.age ? String(p.age) : "",
+                                                            gender: p.gender || "",
+                                                            phone: p.phone || patient.phone,
+                                                            email: (p.email as any) || "",
+                                                            blood_group_id: p.blood_group?.id ? String(p.blood_group.id) : "",
+                                                            address: p.address || "",
+                                                        });
+                                                        setIsExistingPatient(true);
+                                                    } else {
+                                                        setIsExistingPatient(false);
+                                                        // keep entered phone
+                                                    }
+                                                    setShowForm(true);
+                                                } finally {
+                                                    setSearchLoading(false);
+                                                }
+                                            }}
+                                            className="bg-blue-600 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+                                            disabled={searchLoading}
+                                        >
+                                            {searchLoading ? "Searching..." : "Search"}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                // show empty form to create new patient
+                                                setIsExistingPatient(false);
+                                                setShowForm(true);
+                                            }}
+                                            className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg"
+                                        >
+                                            Create New
+                                        </button>
                                     </div>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter phone number"
-                                    name="phone"
-                                    value={patient.phone}
-                                    onChange={handlePatientChange}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                                />
+                                </div>
                             </div>
+                        ) : (
+                            <>
+                                <div className="flex items-center justify-between md:col-span-2">
+                                    <div />
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                // back to search-only view
+                                                setShowForm(false);
+                                                setIsExistingPatient(false);
+                                                setPatient({
+                                                    full_name: "",
+                                                    age: "",
+                                                    gender: "",
+                                                    phone: "",
+                                                    email: "",
+                                                    blood_group_id: "",
+                                                    address: "",
+                                                });
+                                            }}
+                                            className="bg-gray-100 text-gray-800 px-3 py-1 rounded-md"
+                                        >
+                                            Back to Search
+                                        </button>
+                                    </div>
+                                </div>
 
-                            {/* Blood Group */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <FaTint size={16} className="text-gray-500" />
-                                        Blood Group
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    {/* Full Name */}
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Full Name <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter patient's full name"
+                                            name="full_name"
+                                            value={patient.full_name}
+                                            onChange={handlePatientChange}
+                                            disabled={isExistingPatient}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                        />
                                     </div>
-                                </label>
-                                <select
-                                    name="blood_group_id"
-                                    value={patient.blood_group_id}
-                                    onChange={handlePatientChange}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none appearance-none bg-white"
-                                >
-                                    <option value="">Select Blood Group</option>
-                                    {bloodGroups?.map((bg) => (
-                                        <option key={bg.id} value={bg.id}>
-                                            {bg.group_name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
 
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <FaMailchimp size={16} className="text-gray-500" />
-                                        Email
+                                    {/* Age */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Age <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            placeholder="Age"
+                                            name="age"
+                                            value={patient.age}
+                                            onChange={handlePatientChange}
+                                            disabled={isExistingPatient}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                        />
                                     </div>
-                                </label>
-                                <input
-                                    type="email"
-                                    placeholder="Enter email"
-                                    name="email"
-                                    value={patient.email}
-                                    onChange={handlePatientChange}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                                />
-                            </div>
-                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <FaMapMarkerAlt size={16} className="text-gray-500" />
-                                        Address
+
+                                    {/* Gender */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Gender <span className="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            name="gender"
+                                            value={patient.gender}
+                                            onChange={handlePatientChange}
+                                            disabled={isExistingPatient}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none appearance-none bg-white"
+                                        >
+                                            <option value="">Select Gender</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
                                     </div>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter full address"
-                                    name="address"
-                                    value={patient.address}
-                                    onChange={handlePatientChange}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                                />
-                            </div>
-                        </div>
+
+                                    {/* Phone */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <FaPhone size={16} className="text-gray-500" />
+                                                Phone Number <span className="text-red-500">*</span>
+                                            </div>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter phone number"
+                                            name="phone"
+                                            value={patient.phone}
+                                            onChange={handlePatientChange}
+                                            disabled={isExistingPatient}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                        />
+                                        {isExistingPatient ? (
+                                            <p className="text-green-600 text-sm mt-2">Existing patient found — form populated and locked.</p>
+                                        ) : (
+                                            <p className="text-gray-600 text-sm mt-2">No existing patient found — fields are editable to create a new patient.</p>
+                                        )}
+                                    </div>
+
+                                    {/* Blood Group */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <FaTint size={16} className="text-gray-500" />
+                                                Blood Group
+                                            </div>
+                                        </label>
+                                        <select
+                                            name="blood_group_id"
+                                            value={patient.blood_group_id}
+                                            onChange={handlePatientChange}
+                                            disabled={isExistingPatient}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none appearance-none bg-white"
+                                        >
+                                            <option value="">Select Blood Group</option>
+                                            {bloodGroups?.map((bg) => (
+                                                <option key={bg.id} value={bg.id}>
+                                                    {bg.group_name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <FaMailchimp size={16} className="text-gray-500" />
+                                                Email
+                                            </div>
+                                        </label>
+                                        <input
+                                            type="email"
+                                            placeholder="Enter email"
+                                            name="email"
+                                            value={patient.email}
+                                            onChange={handlePatientChange}
+                                            disabled={isExistingPatient}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                        />
+                                    </div>
+                                     <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <FaMapMarkerAlt size={16} className="text-gray-500" />
+                                                Address
+                                            </div>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter full address"
+                                            name="address"
+                                            value={patient.address}
+                                            onChange={handlePatientChange}
+                                            disabled={isExistingPatient}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     {/* Appointment Information Section */}

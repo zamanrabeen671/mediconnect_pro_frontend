@@ -172,3 +172,18 @@ export const getPatientStatistic = createAsyncThunk(
     }
   }
 );
+
+export const searchPatients = createAsyncThunk(
+  "patient/searchPatients",
+  async (phone: string, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data }: any = await api.get(`${API_URL}/patients/search`, {
+        params: { phone },
+      });
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Unable to search patients.");
+    }
+  }
+);

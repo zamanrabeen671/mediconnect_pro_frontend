@@ -7,7 +7,9 @@ import {
   getPatientDetails,
   getPatientPrescriptions,
   getPatientStatistic,
+  searchPatients,
 } from "../API/patientApi";
+import { getPatientList } from "../API/adminApi";
 
 export interface BloodGroupOut {
   id: number;
@@ -64,6 +66,8 @@ interface PatientState {
   patientPrescriptions?: PatientPrescriptions[];
   patientDetails: patientDetails | null;
   patientStatistics: PatientStatistics | null;
+  patientList: any[];
+  searchResults: any[];
   loading: boolean;
 }
 
@@ -74,6 +78,8 @@ const initialState: PatientState = {
   prescriptions: [],
   patientAppointments: [],
   patientPrescriptions: [],
+  patientList: [],
+  searchResults: [],
   patientStatistics: null,
   patientDetails: null,
   loading: false,
@@ -122,6 +128,14 @@ const patientSlice = createSlice({
     builder.addCase(getPatientPrescriptions.fulfilled, (state, action) => {
       state.loading = false;
       state.patientPrescriptions = action.payload;
+    });
+    builder.addCase(getPatientList.fulfilled, (state, action) => {
+      state.loading = false;
+      state.patientList = action.payload;
+    });
+    builder.addCase(searchPatients.fulfilled, (state, action) => {
+      state.loading = false;
+      state.searchResults = action.payload || [];
     });
   },
 });
