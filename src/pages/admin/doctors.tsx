@@ -22,8 +22,8 @@ export default function AdminDoctors() {
     rejected: { icon: FaTimesCircle, color: "text-red-500", bg: "bg-red-50", label: "Rejected" },
   }
 
-  const updateProfileCompletion = (doctorId: number, status: string) => {
-    dispatch(doctorUpdate({ postData: { id: doctorId, status }, router: () => { } }));
+  const updateProfileCompletion = async (doctorId: number, status: string) => {
+    await dispatch(doctorUpdate({ postData: { id: doctorId, status }, router: () => { } })).unwrap()
 
     dispatch(getDoctorList({}))
   }
@@ -142,7 +142,7 @@ export default function AdminDoctors() {
                         </td>
                         <td className="px-6 py-4 text-foreground">{doctor.specialization}</td>
                         <td className="px-6 py-4 text-foreground">{doctor.institute}</td>
-                        <td className="px-6 py-4 text-foreground">{doctor.bmdcNumber}</td>
+                        <td className="px-6 py-4 text-foreground">{doctor.bmdc_number}</td>
                         <td className="px-6 py-4">
                           <span
                             className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${status.bg} ${status.color}`}

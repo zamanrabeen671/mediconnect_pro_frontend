@@ -199,7 +199,7 @@ export const createAppointmentWithPatient = createAsyncThunk(
       const api = useAxios();
       console.log(postData)
       const response = await api.post(`${API_URL}/appointments/appointmentByPatient`, postData);
-      router(`/appointments`); // redirect to appointment list after creation
+      router(`/doctor/appointments`); // redirect to appointment list after creation
       return response.data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data || err.message);

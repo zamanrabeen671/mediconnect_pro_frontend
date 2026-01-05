@@ -14,6 +14,8 @@ import DoctorProfileCompletion from "./pages/doctor/profile-completion";
 
 import { PendingDoctor } from "./components/common/pendingdoctor";
 import { PatientLayout } from "./components/Layout/patientLayout";
+import About from "./components/common/about";
+import Services from "./components/common/services";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -78,14 +80,21 @@ function App() {
           path="/patient/*"
           element={isAuthenticated && user?.role === "patient" ? <PatientLayout /> : <Navigate to="/sign-in" />}
         />
-        
+
 
         {/* Admin routes */}
         <Route
           path="/admin/*"
           element={isAuthenticated && user?.role === "admin" ? <AdminLayout /> : <Navigate to="/sign-in" />}
         />
-
+        <Route
+          path="/about"
+          element={<About />}
+        />
+        <Route
+          path="/services"
+          element={<Services />}
+        />
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

@@ -4,6 +4,8 @@ import { Popover, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { getMedicineList } from "../../store/API/adminApi";
+import { createPrescription } from "../../store/API/doctorApi";
+import { useNavigate } from "react-router";
 
 // Types based on your backend models
 interface MedicineOut {
@@ -38,12 +40,12 @@ interface EditorProps {
   onCreate?: (payload: Partial<PrescriptionCreate>) => Promise<any>;
 }
 
-export const Editor = ({ appointmentId, patientId, onCreate }: EditorProps) => {
+export const Editor = ({ appointmentId, patientId }: EditorProps) => {
   const [prescribedMedicines, setPrescribedMedicines] = useState<
     PrescriptionMedicineCreate[]
   >([]);
   const dispatch = useAppDispatch();
- 
+  const navigate = useNavigate();
   const { medicines } = useAppSelector((state) => state.admin);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -98,10 +100,10 @@ export const Editor = ({ appointmentId, patientId, onCreate }: EditorProps) => {
     );
   };
 
-  const handleSubmit = (): void => {
-    const prescriptionData: Partial<PrescriptionCreate> = {
-      appointment_id: appointmentId ? Number(appointmentId) : undefined,
-      patient_id: patientId ? Number(patientId) : undefined,
+  const handleSubmit = async () => {
+    const prescriptionData = {
+      appointment_id: Number(appointmentId),
+      patient_id: Number(patientId),
       notes: notes,
       medicines: prescribedMedicines.map((pm) => ({
         medicine_id: pm.medicine_id,
@@ -110,25 +112,29 @@ export const Editor = ({ appointmentId, patientId, onCreate }: EditorProps) => {
         instruction: pm.instruction,
       })),
     };
-
-    if (onCreate) {
-      onCreate(prescriptionData)
-        .then(() => {
-          setPrescribedMedicines([]);
-          setNotes("");
-        })
-        .catch((err) => {
-          console.error("Failed to create prescription from Editor:", err);
-        });
-    } else {
-      console.log("Prescription Data:", prescriptionData);
+    if (!patientId) {
+      return;
     }
+    if (!appointmentId) {
+      return;
+    }
+
+
+    try {
+
+      const result = await dispatch(createPrescription(prescriptionData)).unwrap();
+      setNotes("");
+
+    
+      alert("Prescription created successfully! You can now add medicines.");
+      navigate(`/doctor/patient/${patientId}/details`);
+      return result;
+    } catch (err: any) {
+      alert(err || "Failed to create prescription");
+    }
+
   };
 
-  // Suggestion Input Component
-  
-
-  // Popover select component for fixed option lists (shows on input focus/click)
   const PopoverSelect = ({
     value,
     onChange,
@@ -336,11 +342,10 @@ export const Editor = ({ appointmentId, patientId, onCreate }: EditorProps) => {
                                 key={medicine.id}
                                 onClick={() => handleAddMedicine(medicine)}
                                 disabled={isAdded}
-                                className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 ${
-                                  isAdded
-                                    ? "opacity-50 cursor-not-allowed bg-gray-50"
-                                    : ""
-                                }`}
+                                className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 ${isAdded
+                                  ? "opacity-50 cursor-not-allowed bg-gray-50"
+                                  : ""
+                                  }`}
                               >
                                 <div className="font-medium text-gray-900">
                                   {medicine.name}
