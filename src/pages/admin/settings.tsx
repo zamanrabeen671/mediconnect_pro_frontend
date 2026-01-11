@@ -1,11 +1,14 @@
 "use client"
 
-import { FaUser, FaCog, FaSave } from "react-icons/fa"
+import { FaUser, FaCog, FaSave, FaStethoscope, FaBuilding, FaCertificate } from "react-icons/fa"
 import { useState } from "react"
 import { Medicine } from "../../components/common/medicine"
+import { Specialization } from "../../components/common/specialization"
+import { Institute } from "../../components/common/institute"
+import { Qualification } from "../../components/common/qualification"
 
 export default function AdminSettings() {
-  const [activeTab, setActiveTab] = useState<"profile" | "medicine">("profile")
+  const [activeTab, setActiveTab] = useState<"profile" | "medicine" | "specialization" | "institute" | "qualification">("profile")
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -42,6 +45,39 @@ export default function AdminSettings() {
               >
                 <FaCog className="w-4 h-4" />
                 Medicine
+              </button>
+              <button
+                onClick={() => setActiveTab("specialization")}
+                className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors ${
+                  activeTab === "specialization"
+                    ? "bg-blue-600 text-white"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <FaStethoscope className="w-4 h-4" />
+                Specialization
+              </button>
+              <button
+                onClick={() => setActiveTab("institute")}
+                className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors ${
+                  activeTab === "institute"
+                    ? "bg-blue-600 text-white"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <FaBuilding className="w-4 h-4" />
+                Institute
+              </button>
+              <button
+                onClick={() => setActiveTab("qualification")}
+                className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors ${
+                  activeTab === "qualification"
+                    ? "bg-blue-600 text-white"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <FaCertificate className="w-4 h-4" />
+                Qualification
               </button>
             </div>
 
@@ -99,6 +135,18 @@ export default function AdminSettings() {
 
               {activeTab === "medicine" && (
                 <Medicine />
+              )}
+
+              {activeTab === "specialization" && (
+                <Specialization />
+              )}
+
+              {activeTab === "institute" && (
+                <Institute />
+              )}
+
+              {activeTab === "qualification" && (
+                <Qualification />
               )}
             </div>
           </div>

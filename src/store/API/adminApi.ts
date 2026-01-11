@@ -247,3 +247,282 @@ export const getPopularSpecializations = createAsyncThunk(
     }
   }
 );
+
+/**
+ * Get specialization list
+ */
+export const getSpecializationList = createAsyncThunk(
+  "specialization/list",
+  async (search: string | null = null, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.get(`${API_URL}/api/v1/specializations`, {
+        params: search ? { search } : {},
+      });
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/**
+ * Get specialization by ID
+ */
+export const getSpecializationById = createAsyncThunk(
+  "specialization/get-by-id",
+  async (specializationId: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.get(
+        `${API_URL}/api/v1/specializations/${specializationId}`
+      );
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/**
+ * Create specialization
+ */
+export const createSpecialization = createAsyncThunk(
+  "specialization/create",
+  async (payload: any, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.post(
+        `${API_URL}/api/v1/specializations`,
+        payload
+      );
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/**
+ * Update specialization
+ */
+export const updateSpecialization = createAsyncThunk(
+  "specialization/update",
+  async (
+    { specializationId, payload }: { specializationId: number; payload: any },
+    { rejectWithValue }
+  ) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.put(
+        `${API_URL}/api/v1/specializations/${specializationId}`,
+        payload
+      );
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/**
+ * Delete specialization
+ */
+export const deleteSpecialization = createAsyncThunk(
+  "specialization/delete",
+  async (specializationId: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      await api.delete(`${API_URL}/api/v1/specializations/${specializationId}`);
+      return specializationId;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/**
+ * Get institute list
+ */
+export const getInstituteList = createAsyncThunk(
+  "institute/list",
+  async (search: string | null = null, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.get(`${API_URL}/api/v1/institutes`, {
+        params: search ? { search } : {},
+      });
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/**
+ * Get institute by ID
+ */
+export const getInstituteById = createAsyncThunk(
+  "institute/get-by-id",
+  async (instituteId: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.get(
+        `${API_URL}/api/v1/institutes/${instituteId}`
+      );
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/**
+ * Create institute
+ */
+export const createInstitute = createAsyncThunk(
+  "institute/create",
+  async (payload: any, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.post(
+        `${API_URL}/api/v1/institutes`,
+        payload
+      );
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/**
+ * Update institute
+ */
+export const updateInstitute = createAsyncThunk(
+  "institute/update",
+  async (
+    { instituteId, payload }: { instituteId: number; payload: any },
+    { rejectWithValue }
+  ) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.put(
+        `${API_URL}/api/v1/institutes/${instituteId}`,
+        payload
+      );
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/**
+ * Delete institute
+ */
+export const deleteInstitute = createAsyncThunk(
+  "institute/delete",
+  async (instituteId: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      await api.delete(`${API_URL}/api/v1/institutes/${instituteId}`);
+      return instituteId;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/**
+ * Get qualification list
+ */
+export const getQualificationList = createAsyncThunk(
+  "qualification/list",
+  async (search: string | null = null, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.get(`${API_URL}/api/v1/qualifications`, {
+        params: search ? { search } : {},
+      });
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/**
+ * Get qualification by ID
+ */
+export const getQualificationById = createAsyncThunk(
+  "qualification/get-by-id",
+  async (qualificationId: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.get(
+        `${API_URL}/api/v1/qualifications/${qualificationId}`
+      );
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/**
+ * Create qualification
+ */
+export const createQualification = createAsyncThunk(
+  "qualification/create",
+  async (payload: any, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.post(
+        `${API_URL}/api/v1/qualifications`,
+        payload
+      );
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/**
+ * Update qualification
+ */
+export const updateQualification = createAsyncThunk(
+  "qualification/update",
+  async (
+    { qualificationId, payload }: { qualificationId: number; payload: any },
+    { rejectWithValue }
+  ) => {
+    try {
+      const api = useAxios();
+      const { data } = await api.put(
+        `${API_URL}/api/v1/qualifications/${qualificationId}`,
+        payload
+      );
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+/**
+ * Delete qualification
+ */
+export const deleteQualification = createAsyncThunk(
+  "qualification/delete",
+  async (qualificationId: number, { rejectWithValue }) => {
+    try {
+      const api = useAxios();
+      await api.delete(`${API_URL}/api/v1/qualifications/${qualificationId}`);
+      return qualificationId;
+    } catch (err: any) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
