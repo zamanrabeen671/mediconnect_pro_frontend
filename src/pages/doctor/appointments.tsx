@@ -5,7 +5,6 @@ import {
   FaClock as FaPending,
   FaUserInjured,
   FaPhone,
-  FaBirthdayCake,
   FaTimes,
   FaPrescriptionBottleAlt,
 } from "react-icons/fa";
@@ -13,8 +12,6 @@ import { useNavigate } from "react-router";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useEffect, useState } from "react";
 import { doctorUpdateAppointmentStatus, getDoctorAppointmentList } from "../../store/API/doctorApi";
-import useAxios from "../../utils/useAxios";
-import { API_URL, BASE_URL } from "../../settings/config";
 
 export default function DoctorAppointments() {
   const navigate = useNavigate();
@@ -23,7 +20,6 @@ export default function DoctorAppointments() {
   const { user } = useAppSelector((state) => state.auth);
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
   const [followupLoadingId, setFollowupLoadingId] = useState<number | null>(null);
-  const api = useAxios();
 
   useEffect(() => {
     dispatch(getDoctorAppointmentList(user?.id!));

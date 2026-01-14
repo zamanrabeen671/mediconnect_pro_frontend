@@ -1,6 +1,4 @@
-import { useState, useEffect } from "react";
-import { useAppDispatch } from "../../store/hooks";
-import { updateProfileCompletion } from "../../store/slices/auth-slice";
+import { useState, useEffect, useRef } from "react";
 import {
   FaStethoscope,
   FaGraduationCap,
@@ -10,13 +8,14 @@ import {
   FaDollarSign,
   FaPhone,
   FaTimes,
-  FaPlus,
+  FaChevronDown,
+  FaSearch,
 } from "react-icons/fa";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useNavigate } from "react-router";
 import { doctorCreate } from "../../store/API/doctorApi";
-import { getSpecializationList } from "../../store/API/adminApi";
-import { getInstituteList } from "../../store/API/adminApi";
-import { getQualificationList } from "../../store/API/adminApi";
+import { updateProfileCompletion } from "../../store/slices/auth-slice";
+import { getInstituteList, getQualificationList, getSpecializationList } from "../../store/API/adminApi";
 
 interface Specialization {
   id: number;
@@ -41,67 +40,61 @@ export default function DoctorProfileCompletion() {
     bmdc_number: "",
     experience: "",
     consultation_fee: "",
-    specialization_ids: [] as number[],
-    institute_ids: [] as number[],
+    specialization_id: null as number | null,
+    institute_id: null as number | null,
     qualification_ids: [] as number[],
     qualification_names: [] as string[],
   });
 
-  const [specializations, setSpecializations] = useState<Specialization[]>([]);
-  const [institutes, setInstitutes] = useState<Institute[]>([]);
-  const [qualifications, setQualifications] = useState<Qualification[]>([]);
-  const [newQualification, setNewQualification] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  // Fetch data on component mount
+  const { specializationList, instituteList, qualificationList } = useAppSelector((state) => state.doctor);
+
+  const [specializationOpen, setSpecializationOpen] = useState(false);
+  const [instituteOpen, setInstituteOpen] = useState(false);
+  const [qualificationOpen, setQualificationOpen] = useState(false);
+  const [qualificationSearch, setQualificationSearch] = useState("");
+  const [newQualification, setNewQualification] = useState("");
+  const [error, setError] = useState("");
+
+  const specializationRef = useRef<HTMLDivElement>(null);
+  const instituteRef = useRef<HTMLDivElement>(null);
+  const qualificationRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns when clicking outside
   useEffect(() => {
-    fetchData();
+    const handleClickOutside = (event: MouseEvent) => {
+      if (specializationRef.current && !specializationRef.current.contains(event.target as Node)) {
+        setSpecializationOpen(false);
+      }
+      if (instituteRef.current && !instituteRef.current.contains(event.target as Node)) {
+        setInstituteOpen(false);
+      }
+      if (qualificationRef.current && !qualificationRef.current.contains(event.target as Node)) {
+        setQualificationOpen(false);
+        setQualificationSearch("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    dispatch(getSpecializationList(null));
+    dispatch(getInstituteList(null));
+    dispatch(getQualificationList(null));
   }, [dispatch]);
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [specsResult, instsResult, qualsResult] = await Promise.all([
-        dispatch(getSpecializationList(null)),
-        dispatch(getInstituteList(null)),
-        dispatch(getQualificationList(null)),
-      ]);
-
-      if (specsResult.payload && Array.isArray(specsResult.payload)) {
-        setSpecializations(specsResult.payload);
-      }
-      if (instsResult.payload && Array.isArray(instsResult.payload)) {
-        setInstitutes(instsResult.payload);
-      }
-      if (qualsResult.payload && Array.isArray(qualsResult.payload)) {
-        setQualifications(qualsResult.payload);
-      }
-    } catch (err) {
-      console.error("Error fetching data:", err);
-    } finally {
-      setLoading(false);
-    }
+  const handleSpecializationSelect = (id: number) => {
+    setFormData((prev) => ({ ...prev, specialization_id: id }));
+    setSpecializationOpen(false);
   };
 
-  const handleSpecializationToggle = (id: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      specialization_ids: prev.specialization_ids.includes(id)
-        ? prev.specialization_ids.filter((sid) => sid !== id)
-        : [...prev.specialization_ids, id],
-    }));
-  };
-
-  const handleInstituteToggle = (id: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      institute_ids: prev.institute_ids.includes(id)
-        ? prev.institute_ids.filter((iid) => iid !== id)
-        : [...prev.institute_ids, id],
-    }));
+  const handleInstituteSelect = (id: number) => {
+    setFormData((prev) => ({ ...prev, institute_id: id }));
+    setInstituteOpen(false);
   };
 
   const handleQualificationToggle = (id: number) => {
@@ -117,21 +110,16 @@ export default function DoctorProfileCompletion() {
     if (newQualification.trim()) {
       setFormData((prev) => ({
         ...prev,
-        qualification_names: [
-          ...prev.qualification_names,
-          newQualification.trim(),
-        ],
+        qualification_names: [...prev.qualification_names, newQualification.trim()],
       }));
       setNewQualification("");
     }
   };
 
-  const handleRemoveQualification = (index: number) => {
+  const handleRemoveSelectedQualification = (id: number) => {
     setFormData((prev) => ({
       ...prev,
-      qualification_names: prev.qualification_names.filter(
-        (_, i) => i !== index
-      ),
+      qualification_ids: prev.qualification_ids.filter((qid) => qid !== id),
     }));
   };
 
@@ -139,23 +127,18 @@ export default function DoctorProfileCompletion() {
     e.preventDefault();
     setError("");
 
-    if (
-      !formData.full_name ||
-      !formData.phone ||
-      !formData.bmdc_number ||
-      !formData.experience
-    ) {
+    if (!formData.full_name || !formData.phone || !formData.bmdc_number || !formData.experience) {
       setError("Please fill in all required fields");
       return;
     }
 
-    if (formData.specialization_ids.length === 0) {
-      setError("Please select at least one specialization");
+    if (!formData.specialization_id) {
+      setError("Please select a specialization");
       return;
     }
 
-    if (formData.institute_ids.length === 0) {
-      setError("Please select at least one institute");
+    if (!formData.institute_id) {
+      setError("Please select an institute");
       return;
     }
 
@@ -165,171 +148,105 @@ export default function DoctorProfileCompletion() {
       bmdc_number: formData.bmdc_number,
       experience: formData.experience,
       consultation_fee: formData.consultation_fee || null,
-      specialization_ids: formData.specialization_ids,
-      institute_ids: formData.institute_ids,
+      specialization_ids: [formData.specialization_id],
+      institute_ids: [formData.institute_id],
       qualification_ids: formData.qualification_ids,
       qualification_names: formData.qualification_names,
     };
 
-    // Save profile
     dispatch(doctorCreate({ postData: payload, router: navigate }));
     dispatch(updateProfileCompletion("pending"));
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading data...</p>
-        </div>
-      </div>
-    );
-  }
+  // Derived selected items
+  const selectedSpecialization = specializationList.find((s) => s.id === formData.specialization_id);
+  const selectedInstitute = instituteList.find((i) => i.id === formData.institute_id);
+  const selectedQualifications = qualificationList.filter((q) => formData.qualification_ids.includes(q.id));
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto py-8">
-        {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Complete Your Profile
-          </h1>
-          <p className="text-muted-foreground">
-            Help patients know more about you by completing your professional
-            profile
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Complete Your Profile</h1>
+          <p className="text-gray-600">Help patients know more about you by completing your professional profile</p>
         </div>
 
-        <div className="bg-card border border-border rounded-xl p-8 shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
           <form onSubmit={handleSubmit} className="space-y-8">
             {error && (
-              <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm">
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
 
             {/* Personal Information Section */}
             <div>
-              <h2 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
-                <FaIdCard className="text-accent" />
-                Personal Information
+              <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                <FaIdCard className="text-blue-600" /> Personal Information
               </h2>
               <div className="grid md:grid-cols-2 gap-6">
-                {/* Full Name */}
                 <div>
-                  <label
-                    htmlFor="full_name"
-                    className="block text-sm font-medium text-foreground mb-2"
-                  >
-                    Full Name <span className="text-destructive">*</span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Full Name <span className="text-red-600">*</span></label>
                   <input
-                    id="full_name"
                     type="text"
                     value={formData.full_name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, full_name: e.target.value })
-                    }
-                    className="w-full px-4 py-3 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="e.g., Dr. John Doe"
                   />
                 </div>
 
-                {/* Phone */}
                 <div>
-                  <label
-                    htmlFor="phone"
-                    className="block text-sm font-medium text-foreground mb-2"
-                  >
-                    Phone <span className="text-destructive">*</span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Phone <span className="text-red-600">*</span></label>
                   <div className="relative">
-                    <FaPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <FaPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
-                      id="phone"
                       type="text"
                       value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
-                      className="w-full pl-10 pr-4 py-3 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., +880 1234 567890"
                     />
                   </div>
                 </div>
 
-                {/* BMDC Number */}
                 <div>
-                  <label
-                    htmlFor="bmdc_number"
-                    className="block text-sm font-medium text-foreground mb-2"
-                  >
-                    BMDC Number <span className="text-destructive">*</span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">BMDC Number <span className="text-red-600">*</span></label>
                   <div className="relative">
-                    <FaIdCard className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <FaIdCard className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
-                      id="bmdc_number"
                       type="text"
                       value={formData.bmdc_number}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          bmdc_number: e.target.value,
-                        })
-                      }
-                      className="w-full pl-10 pr-4 py-3 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      onChange={(e) => setFormData({ ...formData, bmdc_number: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., A-12345"
                     />
                   </div>
                 </div>
 
-                {/* Experience */}
                 <div>
-                  <label
-                    htmlFor="experience"
-                    className="block text-sm font-medium text-foreground mb-2"
-                  >
-                    Years of Experience{" "}
-                    <span className="text-destructive">*</span>
-                  </label>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Years of Experience <span className="text-red-600">*</span></label>
                   <div className="relative">
-                    <FaClock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <FaClock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
-                      id="experience"
                       type="text"
                       value={formData.experience}
-                      onChange={(e) =>
-                        setFormData({ ...formData, experience: e.target.value })
-                      }
-                      className="w-full pl-10 pr-4 py-3 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., 10"
                     />
                   </div>
                 </div>
 
-                {/* Consultation Fee */}
                 <div className="md:col-span-2">
-                  <label
-                    htmlFor="consultation_fee"
-                    className="block text-sm font-medium text-foreground mb-2"
-                  >
-                    Consultation Fee (Optional)
-                  </label>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Consultation Fee (Optional)</label>
                   <div className="relative">
-                    <FaDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <FaDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
-                      id="consultation_fee"
                       type="text"
                       value={formData.consultation_fee}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          consultation_fee: e.target.value,
-                        })
-                      }
-                      className="w-full pl-10 pr-4 py-3 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      onChange={(e) => setFormData({ ...formData, consultation_fee: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., 500"
                     />
                   </div>
@@ -337,149 +254,121 @@ export default function DoctorProfileCompletion() {
               </div>
             </div>
 
-            {/* Specializations Section */}
+            {/* Specialization */}
             <div>
-              <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-                <FaStethoscope className="text-accent" />
-                Specializations <span className="text-destructive">*</span>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <FaStethoscope className="text-blue-600" /> Specialization <span className="text-red-600">*</span>
               </h2>
-              {specializations.length === 0 ? (
-                <p className="text-muted-foreground">
-                  No specializations available
-                </p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {specializations.map((spec) => (
-                    <label
-                      key={spec.id}
-                      className="flex items-center gap-3 p-3 border border-input rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.specialization_ids.includes(spec.id)}
-                        onChange={() => handleSpecializationToggle(spec.id)}
-                        className="w-4 h-4 rounded border-input bg-background text-accent focus:ring-2 focus:ring-ring"
-                      />
-                      <span className="text-foreground">{spec.name}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
+              <div className="relative" ref={specializationRef}>
+                <button
+                  type="button"
+                  onClick={() => setSpecializationOpen(!specializationOpen)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <span className={selectedSpecialization ? "text-gray-900" : "text-gray-400"}>
+                    {selectedSpecialization?.name || "Select a specialization"}
+                  </span>
+                  <FaChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${specializationOpen ? "rotate-180" : ""}`} />
+                </button>
 
-            {/* Institutes Section */}
-            <div>
-              <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-                <FaHospital className="text-accent" />
-                Institutes/Hospitals <span className="text-destructive">*</span>
-              </h2>
-              {institutes.length === 0 ? (
-                <p className="text-muted-foreground">No institutes available</p>
-              ) : (
-                <div className="space-y-2">
-                  {institutes.map((inst) => (
-                    <label
-                      key={inst.id}
-                      className="flex items-center gap-3 p-4 border border-input rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.institute_ids.includes(inst.id)}
-                        onChange={() => handleInstituteToggle(inst.id)}
-                        className="w-4 h-4 rounded border-input bg-background text-accent focus:ring-2 focus:ring-ring"
-                      />
-                      <div className="flex-1">
-                        <p className="text-foreground font-medium">
-                          {inst.name}
-                        </p>
-                        {inst.address && (
-                          <p className="text-sm text-muted-foreground">
-                            {inst.address}
-                          </p>
-                        )}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Qualifications Section */}
-            <div>
-              <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-                <FaGraduationCap className="text-accent" />
-                Qualifications
-              </h2>
-
-              {/* Select from existing qualifications */}
-              {qualifications.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium text-foreground mb-3">
-                    Select Existing Qualifications
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {qualifications.map((qual) => (
-                      <label
-                        key={qual.id}
-                        className="flex items-center gap-3 p-3 border border-input rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                {specializationOpen && (
+                  <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {specializationList.map((spec) => (
+                      <button
+                        key={spec.id}
+                        type="button"
+                        onClick={() => handleSpecializationSelect(spec.id)}
+                        className={`w-full px-4 py-3 text-left hover:bg-gray-50 ${formData.specialization_id === spec.id ? "bg-blue-50 text-blue-600" : "text-gray-900"}`}
                       >
-                        <input
-                          type="checkbox"
-                          checked={formData.qualification_ids.includes(qual.id)}
-                          onChange={() => handleQualificationToggle(qual.id)}
-                          className="w-4 h-4 rounded border-input bg-background text-accent focus:ring-2 focus:ring-ring"
-                        />
-                        <span className="text-foreground">{qual.name}</span>
-                      </label>
+                        {spec.name}
+                      </button>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+            </div>
 
-              {/* Add custom qualifications */}
-              <div>
-                <h3 className="text-sm font-medium text-foreground mb-3">
-                  Add Custom Qualifications
-                </h3>
-                <div className="flex gap-2 mb-4">
-                  <input
-                    type="text"
-                    value={newQualification}
-                    onChange={(e) => setNewQualification(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddQualification();
-                      }
-                    }}
-                    className="flex-1 px-4 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="e.g., MBBS, MD (Cardiology)"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddQualification}
-                    className="px-4 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors flex items-center gap-2"
-                  >
-                    <FaPlus className="w-4 h-4" />
-                    Add
-                  </button>
-                </div>
+            {/* Institute */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <FaHospital className="text-blue-600" /> Institute/Hospital <span className="text-red-600">*</span>
+              </h2>
+              <div className="relative" ref={instituteRef}>
+                <button
+                  type="button"
+                  onClick={() => setInstituteOpen(!instituteOpen)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <span className={selectedInstitute ? "text-gray-900" : "text-gray-400"}>
+                    {selectedInstitute?.name || "Select an institute"}
+                  </span>
+                  <FaChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${instituteOpen ? "rotate-180" : ""}`} />
+                </button>
 
-                {/* Display added qualifications */}
-                {formData.qualification_names.length > 0 && (
-                  <div className="space-y-2">
-                    {formData.qualification_names.map((qual, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between gap-3 p-3 border border-input rounded-lg bg-muted/50"
+                {instituteOpen && (
+                  <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {instituteList.map((inst) => (
+                      <button
+                        key={inst.id}
+                        type="button"
+                        onClick={() => handleInstituteSelect(inst.id)}
+                        className={`w-full px-4 py-3 text-left hover:bg-gray-50 ${formData.institute_id === inst.id ? "bg-blue-50" : ""}`}
                       >
-                        <span className="text-foreground">{qual}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveQualification(index)}
-                          className="text-destructive hover:text-destructive/80 transition-colors"
-                        >
-                          <FaTimes className="w-4 h-4" />
+                        <p className={`font-medium ${formData.institute_id === inst.id ? "text-blue-600" : "text-gray-900"}`}>{inst.name}</p>
+                        {inst.address && <p className="text-sm text-gray-500">{inst.address}</p>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Qualifications */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <FaGraduationCap className="text-blue-600" /> Qualifications
+              </h2>
+
+              <div className="mb-4">
+                <h3 className="text-sm font-medium text-gray-900 mb-3">Select Existing Qualifications</h3>
+                <div className="relative" ref={qualificationRef}>
+                  <div className="relative">
+                    <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      value={qualificationSearch}
+                      onChange={(e) => setQualificationSearch(e.target.value)}
+                      onFocus={() => setQualificationOpen(true)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Search qualifications..."
+                    />
+                  </div>
+                  {qualificationOpen && (
+                    <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {qualificationList
+                        .filter((q) => q.name.toLowerCase().includes(qualificationSearch.toLowerCase()))
+                        .map((qual) => (
+                          <label key={qual.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formData.qualification_ids.includes(qual.id)}
+                              onChange={() => handleQualificationToggle(qual.id)}
+                              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                            />
+                            <span className="text-gray-900">{qual.name}</span>
+                          </label>
+                        ))}
+                    </div>
+                  )}
+                </div>
+
+                {selectedQualifications.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {selectedQualifications.map((qual) => (
+                      <div key={qual.id} className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                        <span>{qual.name}</span>
+                        <button type="button" onClick={() => handleRemoveSelectedQualification(qual.id)} className="hover:text-blue-900">
+                          <FaTimes className="w-3 h-3" />
                         </button>
                       </div>
                     ))}
@@ -488,11 +377,7 @@ export default function DoctorProfileCompletion() {
               </div>
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full bg-accent text-accent-foreground py-3 rounded-lg font-medium hover:bg-accent/90 transition-colors"
-            >
+            <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
               Complete Profile
             </button>
           </form>

@@ -256,7 +256,7 @@ export const getSpecializationList = createAsyncThunk(
   async (search: string | null = null, { rejectWithValue }) => {
     try {
       const api = useAxios();
-      const { data } = await api.get(`${API_URL}/api/v1/specializations`, {
+      const { data } = await api.get(`${API_URL}/specializations`, {
         params: search ? { search } : {},
       });
       return data;
@@ -275,7 +275,7 @@ export const getSpecializationById = createAsyncThunk(
     try {
       const api = useAxios();
       const { data } = await api.get(
-        `${API_URL}/api/v1/specializations/${specializationId}`
+        `${API_URL}/specializations/${specializationId}`
       );
       return data;
     } catch (err: any) {
@@ -293,7 +293,7 @@ export const createSpecialization = createAsyncThunk(
     try {
       const api = useAxios();
       const { data } = await api.post(
-        `${API_URL}/api/v1/specializations`,
+        `${API_URL}/specializations`,
         payload
       );
       return data;
@@ -315,7 +315,7 @@ export const updateSpecialization = createAsyncThunk(
     try {
       const api = useAxios();
       const { data } = await api.put(
-        `${API_URL}/api/v1/specializations/${specializationId}`,
+        `${API_URL}/specializations/${specializationId}`,
         payload
       );
       return data;
@@ -333,7 +333,7 @@ export const deleteSpecialization = createAsyncThunk(
   async (specializationId: number, { rejectWithValue }) => {
     try {
       const api = useAxios();
-      await api.delete(`${API_URL}/api/v1/specializations/${specializationId}`);
+      await api.delete(`${API_URL}/specializations/${specializationId}`);
       return specializationId;
     } catch (err: any) {
       return rejectWithValue(err.message);
@@ -349,7 +349,7 @@ export const getInstituteList = createAsyncThunk(
   async (search: string | null = null, { rejectWithValue }) => {
     try {
       const api = useAxios();
-      const { data } = await api.get(`${API_URL}/api/v1/institutes`, {
+      const { data } = await api.get(`${API_URL}/institutes`, {
         params: search ? { search } : {},
       });
       return data;
@@ -368,7 +368,7 @@ export const getInstituteById = createAsyncThunk(
     try {
       const api = useAxios();
       const { data } = await api.get(
-        `${API_URL}/api/v1/institutes/${instituteId}`
+        `${API_URL}/institutes/${instituteId}`
       );
       return data;
     } catch (err: any) {
@@ -386,7 +386,7 @@ export const createInstitute = createAsyncThunk(
     try {
       const api = useAxios();
       const { data } = await api.post(
-        `${API_URL}/api/v1/institutes`,
+        `${API_URL}/institutes`,
         payload
       );
       return data;
@@ -408,7 +408,7 @@ export const updateInstitute = createAsyncThunk(
     try {
       const api = useAxios();
       const { data } = await api.put(
-        `${API_URL}/api/v1/institutes/${instituteId}`,
+        `${API_URL}/institutes/${instituteId}`,
         payload
       );
       return data;
@@ -426,7 +426,7 @@ export const deleteInstitute = createAsyncThunk(
   async (instituteId: number, { rejectWithValue }) => {
     try {
       const api = useAxios();
-      await api.delete(`${API_URL}/api/v1/institutes/${instituteId}`);
+      await api.delete(`${API_URL}/institutes/${instituteId}`);
       return instituteId;
     } catch (err: any) {
       return rejectWithValue(err.message);
@@ -442,7 +442,7 @@ export const getQualificationList = createAsyncThunk(
   async (search: string | null = null, { rejectWithValue }) => {
     try {
       const api = useAxios();
-      const { data } = await api.get(`${API_URL}/api/v1/qualifications`, {
+      const { data } = await api.get(`${API_URL}/qualifications`, {
         params: search ? { search } : {},
       });
       return data;
@@ -461,7 +461,7 @@ export const getQualificationById = createAsyncThunk(
     try {
       const api = useAxios();
       const { data } = await api.get(
-        `${API_URL}/api/v1/qualifications/${qualificationId}`
+        `${API_URL}/qualifications/${qualificationId}`
       );
       return data;
     } catch (err: any) {
@@ -479,7 +479,7 @@ export const createQualification = createAsyncThunk(
     try {
       const api = useAxios();
       const { data } = await api.post(
-        `${API_URL}/api/v1/qualifications`,
+        `${API_URL}/qualifications`,
         payload
       );
       return data;
@@ -501,7 +501,7 @@ export const updateQualification = createAsyncThunk(
     try {
       const api = useAxios();
       const { data } = await api.put(
-        `${API_URL}/api/v1/qualifications/${qualificationId}`,
+        `${API_URL}/qualifications/${qualificationId}`,
         payload
       );
       return data;
@@ -519,7 +519,7 @@ export const deleteQualification = createAsyncThunk(
   async (qualificationId: number, { rejectWithValue }) => {
     try {
       const api = useAxios();
-      await api.delete(`${API_URL}/api/v1/qualifications/${qualificationId}`);
+      await api.delete(`${API_URL}/qualifications/${qualificationId}`);
       return qualificationId;
     } catch (err: any) {
       return rejectWithValue(err.message);

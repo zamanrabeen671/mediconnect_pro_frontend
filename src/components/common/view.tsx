@@ -28,19 +28,18 @@ export const ViewPrescription = ({ patientId, patient }: ViewProps) => {
       <div className="flex justify-between border-b pb-4 mb-4">
         <div>
           <h2 className="text-2xl font-bold">{doctor?.full_name}</h2>
-           <p className="font-semibold capitalize">{doctor?.specialization}</p>
-          <p className="text-sm">{doctor?.qualifications}</p>
+           <p className="font-semibold capitalize">{doctor?.specializations?.map((s: any) => s.name).join(", ")}</p>
+          <p className="text-sm">{doctor?.qualifications?.map((q: any) => q.name).join(", ")}</p>
         </div>
 
         <div className="text-right text-sm leading-5">
          
           <p>{doctor?.chamber}</p>
-          <p>{doctor?.institute}</p>
+          <p> {doctor?.institutes?.map((i: any) => i.name).join(", ")}</p>
           <p>📞 {doctor?.phone}</p>
         </div>
       </div>
 
-      {/* ===== Patient Info (ONE ROW) ===== */}
       <div className="flex justify-between border-b pb-3 mb-5 text-sm">
         <div className="flex gap-6">
           <p><strong>Name:</strong> {patient?.full_name}</p>
@@ -60,7 +59,6 @@ export const ViewPrescription = ({ patientId, patient }: ViewProps) => {
         <div className="space-y-5">
           {prescription.medicines.map((item: any, index: number) => (
             <div key={item.id}>
-              {/* Medicine Name */}
               <p className="font-semibold text-base">
                 {index + 1}. {item.medicine.name}{" "}
                 <span className="text-sm font-normal">
@@ -68,7 +66,7 @@ export const ViewPrescription = ({ patientId, patient }: ViewProps) => {
                 </span>
               </p>
 
-              {/* Dosage line */}
+            
               <p className="text-sm text-gray-700 ml-6 mt-1">
                 {item.dosage}
                 <span className="mx-3">----</span>
@@ -81,12 +79,11 @@ export const ViewPrescription = ({ patientId, patient }: ViewProps) => {
         </div>
       </div>
 
-      {/* ===== Notes ===== */}
       {prescription.notes && (
         <div className="mt-8 border-t pt-4 text-sm">
           <strong>Advice:</strong> {prescription.notes}
         </div>
-      )}
+      )} 
     </div>
   );
 };

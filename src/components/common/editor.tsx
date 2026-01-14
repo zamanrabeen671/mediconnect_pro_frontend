@@ -31,7 +31,6 @@ interface PrescriptionCreate {
   medicines: PrescriptionMedicineCreate[];
 }
 
-
 const DOSAGE_AMOUNT_OPTIONS = ["0", "1", "1.5", "2", "2.5", "3"];
 
 interface EditorProps {
@@ -112,27 +111,26 @@ export const Editor = ({ appointmentId, patientId }: EditorProps) => {
         instruction: pm.instruction,
       })),
     };
+    console.log(prescriptionData)
     if (!patientId) {
       return;
     }
     if (!appointmentId) {
       return;
     }
-
-
+    console.log(prescriptionData)
     try {
-
-      const result = await dispatch(createPrescription(prescriptionData)).unwrap();
+      const result = await dispatch(
+        createPrescription(prescriptionData)
+      ).unwrap();
       setNotes("");
 
-    
       alert("Prescription created successfully! You can now add medicines.");
       navigate(`/doctor/patient/${patientId}/details`);
       return result;
     } catch (err: any) {
       alert(err || "Failed to create prescription");
     }
-
   };
 
   const PopoverSelect = ({
@@ -158,7 +156,8 @@ export const Editor = ({ appointmentId, patientId }: EditorProps) => {
         }
       };
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     return (
@@ -232,7 +231,8 @@ export const Editor = ({ appointmentId, patientId }: EditorProps) => {
         }
       };
       document.addEventListener("mousedown", handleClickOutside);
-      return () => document.removeEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
     const apply = (newVals: { m: string; n: string; e: string }) => {
@@ -248,7 +248,9 @@ export const Editor = ({ appointmentId, patientId }: EditorProps) => {
 
     return (
       <div ref={ref}>
-        <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
+        <label className="block text-xs font-medium text-gray-700 mb-1">
+          {label}
+        </label>
         <div className="flex gap-2">
           {buttons.map((b, idx) => (
             <div key={b.key} className="relative">
@@ -342,10 +344,11 @@ export const Editor = ({ appointmentId, patientId }: EditorProps) => {
                                 key={medicine.id}
                                 onClick={() => handleAddMedicine(medicine)}
                                 disabled={isAdded}
-                                className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 ${isAdded
-                                  ? "opacity-50 cursor-not-allowed bg-gray-50"
-                                  : ""
-                                  }`}
+                                className={`w-full text-left px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150 ${
+                                  isAdded
+                                    ? "opacity-50 cursor-not-allowed bg-gray-50"
+                                    : ""
+                                }`}
                               >
                                 <div className="font-medium text-gray-900">
                                   {medicine.name}
@@ -379,8 +382,7 @@ export const Editor = ({ appointmentId, patientId }: EditorProps) => {
           </div>
         </div>
         {prescribedMedicines.length > 0 && (
-          <div >
-
+          <div>
             <div className="divide-y divide-gray-200">
               {prescribedMedicines.map((pm, index) => (
                 <div
@@ -418,7 +420,11 @@ export const Editor = ({ appointmentId, patientId }: EditorProps) => {
                         <DosageButtons
                           value={pm.dosage}
                           onChange={(value) =>
-                            handleUpdateMedicine(pm.medicine_id, "dosage", value)
+                            handleUpdateMedicine(
+                              pm.medicine_id,
+                              "dosage",
+                              value
+                            )
                           }
                           label="Dosage"
                         />
@@ -426,7 +432,11 @@ export const Editor = ({ appointmentId, patientId }: EditorProps) => {
                         <PopoverSelect
                           value={pm.duration}
                           onChange={(value) =>
-                            handleUpdateMedicine(pm.medicine_id, "duration", value)
+                            handleUpdateMedicine(
+                              pm.medicine_id,
+                              "duration",
+                              value
+                            )
                           }
                           options={["1", "2", "3", "7", "10", "30", "continue"]}
                           placeholder="Select duration"
@@ -436,7 +446,11 @@ export const Editor = ({ appointmentId, patientId }: EditorProps) => {
                         <PopoverSelect
                           value={pm.instruction}
                           onChange={(value) =>
-                            handleUpdateMedicine(pm.medicine_id, "instruction", value)
+                            handleUpdateMedicine(
+                              pm.medicine_id,
+                              "instruction",
+                              value
+                            )
                           }
                           options={["after meal", "before meal"]}
                           placeholder="Select instruction"

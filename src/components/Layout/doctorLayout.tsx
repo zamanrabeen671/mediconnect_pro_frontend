@@ -9,7 +9,7 @@ import DoctorPatients from "../../pages/doctor/patients";
 import DoctorPatientPrescription from "../../pages/doctor/patient-prescription";
 import DoctorSchedulePage from "../../pages/doctor/schedule";
 import DoctorScheduleAddPage from "../../pages/doctor/schedule-add";
-import { DcotorPatientDetails } from "../patient/doctorPatientDetails";
+import { DcotorPatientDetails } from "../Patient/doctorPatientDetails";
 
 export default function DoctorLayout() {
   return (
