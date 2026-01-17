@@ -17,7 +17,7 @@ import {
   getPatientAppointments,
   getPatientDetails,
   getPatientPrescriptions,
-  getPatientStatistic,
+  // getPatientStatistic,
 } from "../../store/API/patientApi";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
@@ -287,10 +287,16 @@ export default function PatientDashboard() {
                       {doc.full_name}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {doc.specialization || "General"}
+                      {doc.specializations.map((item:any) => item.name).join(", ") || "General"}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {doc.qualifications || "General"}
+                      {doc.qualifications.map((item:any) => item.name).join(", ") || "MBBS"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {doc.institutes.map((item:any) => item.name).join(", ") || "MBBS"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Chamber: {doc.chamber || "Not specified"}
                     </p>
                   </div>
                 </div>

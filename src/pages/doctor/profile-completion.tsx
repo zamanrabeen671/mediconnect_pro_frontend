@@ -17,26 +17,27 @@ import { doctorCreate } from "../../store/API/doctorApi";
 import { updateProfileCompletion } from "../../store/slices/auth-slice";
 import { getInstituteList, getQualificationList, getSpecializationList } from "../../store/API/adminApi";
 
-interface Specialization {
-  id: number;
-  name: string;
-}
+// interface Specialization {
+//   id: number;
+//   name: string;
+// }
 
-interface Institute {
-  id: number;
-  name: string;
-  address?: string;
-}
+// interface Institute {
+//   id: number;
+//   name: string;
+//   address?: string;
+// }
 
-interface Qualification {
-  id: number;
-  name: string;
-}
+// interface Qualification {
+//   id: number;
+//   name: string;
+// }
 
 export default function DoctorProfileCompletion() {
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
+    chamber: "",
     bmdc_number: "",
     experience: "",
     consultation_fee: "",
@@ -55,7 +56,7 @@ export default function DoctorProfileCompletion() {
   const [instituteOpen, setInstituteOpen] = useState(false);
   const [qualificationOpen, setQualificationOpen] = useState(false);
   const [qualificationSearch, setQualificationSearch] = useState("");
-  const [newQualification, setNewQualification] = useState("");
+  // const [newQualification, setNewQualification] = useState("");
   const [error, setError] = useState("");
 
   const specializationRef = useRef<HTMLDivElement>(null);
@@ -106,15 +107,15 @@ export default function DoctorProfileCompletion() {
     }));
   };
 
-  const handleAddQualification = () => {
-    if (newQualification.trim()) {
-      setFormData((prev) => ({
-        ...prev,
-        qualification_names: [...prev.qualification_names, newQualification.trim()],
-      }));
-      setNewQualification("");
-    }
-  };
+  // const handleAddQualification = () => {
+  //   if (newQualification.trim()) {
+  //     setFormData((prev) => ({
+  //       ...prev,
+  //       qualification_names: [...prev.qualification_names, newQualification.trim()],
+  //     }));
+  //     setNewQualification("");
+  //   }
+  // };
 
   const handleRemoveSelectedQualification = (id: number) => {
     setFormData((prev) => ({
@@ -238,7 +239,7 @@ export default function DoctorProfileCompletion() {
                   </div>
                 </div>
 
-                <div className="md:col-span-2">
+                <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">Consultation Fee (Optional)</label>
                   <div className="relative">
                     <FaDollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -248,6 +249,19 @@ export default function DoctorProfileCompletion() {
                       onChange={(e) => setFormData({ ...formData, consultation_fee: e.target.value })}
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="e.g., 500"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-900 mb-2">Chamber <span className="text-red-600">*</span></label>
+                  <div className="relative">
+                    <FaIdCard className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      value={formData.chamber}
+                      onChange={(e) => setFormData({ ...formData, chamber: e.target.value })}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g., A-12345"
                     />
                   </div>
                 </div>
